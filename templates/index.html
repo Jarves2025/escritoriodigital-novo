@@ -18,6 +18,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
+  <!-- Firebase config e função de login -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDPRSomKzMMlIiACYdpCItc7wE_SpK5cTQ",
@@ -34,13 +35,13 @@
     const db = firebase.firestore();
 
     async function fazerLogin() {
+      console.log("Tentando logar...");
       const provider = new firebase.auth.GoogleAuthProvider();
 
       try {
         const result = await auth.signInWithPopup(provider);
         const user = result.user;
 
-        // Chamada para o backend Flask
         const response = await fetch("/api/set_session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
