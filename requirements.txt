@@ -2,3 +2,4 @@ Flask
 google-cloud-firestore
 firebase-admin
 python-dotenv
+gunicorn
