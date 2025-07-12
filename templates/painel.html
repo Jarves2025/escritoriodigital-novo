@@ -1,28 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Painel de Atendimento</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+  <meta charset="UTF-8">
+  <title>Painel</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
 </head>
 <body>
-    <header>
-        <h1>Painel de Atendimento</h1>
-        <a href="{{ url_for('logout') }}">Sair</a>
-    </header>
-    <main>
-        {% if role == 'ASSISTENTE' %}
-        <section id="assistant-view">
-            <h2>Visão do Assistente</h2>
-            <p>Data selecionada: {{ data_selecionada }}</p>
-            <!-- A lógica da agenda virá aqui -->
-        </section>
-        {% elif role == 'PROFISSIONAL' %}
-        <section id="professional-view">
-            <h2>Visão do Profissional</h2>
-            <!-- A lógica da fila de espera virá aqui -->
-        </section>
-        {% endif %}
-    </main>
+  <div class="card">
+    <h2>Painel do Consultório</h2>
+    <p>Bem-vindo! Seu papel é: <strong>{{ role }}</strong></p>
+
+    <a href="/logout"><button>Sair</button></a>
+  </div>
 </body>
 </html>

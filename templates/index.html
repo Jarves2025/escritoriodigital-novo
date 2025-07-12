@@ -1,57 +1,50 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+  <meta charset="UTF-8">
+  <title>Meu Consultório</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
 </head>
 <body>
-    <div class="login-container">
-        <h2>Meu Consultório</h2>
-        <p>Acesse o painel para continuar</p>
-        <button id="google-login-btn">Entrar com o Google</button>
-        <p id="error-message" style="color:red;"></p>
-    </div>
+  <div class="card">
+    <h2>Meu Consultório</h2>
+    <p>Acesse o painel para continuar</p>
+    <button onclick="fazerLogin()">Entrar com o Google</button>
+    <p id="erro" style="color: red;"></p>
+  </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script>
-        // Use as mesmas credenciais do seu arquivo firebase-config.js
-        const firebaseConfig = {
-            apiKey: "AIzaSyDPRSomKzMMlIiACYdpCItc7wE_SpK5cTQY",
-            authDomain: "meu-consultorio-digital.firebaseapp.comN",
-            projectId: "meu-consultorio-digitalID",
-            storageBucket: "meu-consultorio-digital.firebasestorage.appT",
-            messagingSenderId: "940558599141",
-            appId: "1:940558599141:web:949f3356fd50c09d93e50c"
-        };
-        firebase.initializeApp(firebaseConfig );
-        const auth = firebase.auth();
-        const provider = new firebase.auth.GoogleAuthProvider();
+  <!-- Firebase -->
+  <script src="{{ url_for('static', filename='firebase-config.js') }}"></script>
 
-        document.getElementById('google-login-btn').addEventListener('click', () => {
-            auth.signInWithPopup(provider)
-                .then((result) => {
-                    const user = result.user;
-                    // Envia o UID para o nosso backend Python para criar a sessão
-                    fetch('/api/set_session', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ uid: user.uid })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            window.location.href = '/painel';
-                        } else {
-                            document.getElementById('error-message').textContent = data.message;
-                            auth.signOut();
-                        }
-                    });
-                }).catch((error) => {
-                    document.getElementById('error-message').textContent = 'Erro no login: ' + error.message;
-                });
+  <script>
+    async function fazerLogin() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+
+      try {
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+
+        // Chamada para o backend Flask
+        const response = await fetch("/api/set_session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ uid: user.uid })
         });
-    </script>
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+          window.location.href = "/painel";
+        } else {
+          document.getElementById("erro").innerText = "Erro: " + data.message;
+        }
+
+      } catch (error) {
+        document.getElementById("erro").innerText = "Erro no login: " + error.message;
+      }
+    }
+  </script>
 </body>
 </html>

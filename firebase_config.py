@@ -2,10 +2,11 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import os
 
-# Carrega as credenciais do Firebase a partir de um arquivo JSON.
-# Vamos configurar este arquivo no Render.
-cred = credentials.Certificate('firebase-credentials.json') 
-firebase_admin.initialize_app(cred)
+# Garante que só inicialize uma vez (evita erros em produção ou debug Flask)
+if not firebase_admin._apps:
+    cred_path = os.path.join(os.path.dirname(__file__), 'firebase-credentials.json')
+    cred = credentials.Certificate(cred_path)
+    firebase_admin.initialize_app(cred)
 
-# Exporta a instância do banco de dados para ser usada em outros arquivos.
+# Exporta o client do Firestore
 db = firestore.client()
