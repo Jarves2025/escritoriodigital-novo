@@ -13,12 +13,11 @@
     <p id="erro" style="color: red;"></p>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+  <!-- SDKs compatíveis com firebase.* -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <!-- Firebase config + lógica de login -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDPRSomKzMMlIiACYdpCItc7wE_SpK5cTQ",
@@ -41,11 +40,10 @@
         const result = await auth.signInWithPopup(provider);
         const user = result.user;
 
+        // Chamada para o backend Flask
         const response = await fetch("/api/set_session", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ uid: user.uid })
         });
 
@@ -59,6 +57,7 @@
 
       } catch (error) {
         document.getElementById("erro").innerText = "Erro no login: " + error.message;
+        console.error(error);
       }
     }
   </script>
