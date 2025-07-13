@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta charset="UTF-8"><title>Painel</title>
-<link rel="stylesheet" href="{{ url_for('static','estilos.css') }}"></head><body>
+<link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}"></head><body>
   <div class="card">
     <h2>Painel - {{ role }}</h2>
     {% if role=='ASSISTENTE' %}
