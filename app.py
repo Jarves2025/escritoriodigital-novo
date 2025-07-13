@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from firebase_config import db  # Firebase Firestore
+from firebase_config import db
 import datetime
 
 app = Flask(__name__)
@@ -15,7 +15,6 @@ def index():
 
 @app.route('/login', methods=['POST'])
 def login():
-    # Apenas redireciona; login é feito via Firebase no frontend
     return redirect(url_for('painel'))
 
 @app.route('/logout')
@@ -24,7 +23,7 @@ def logout():
     session.pop('user_role', None)
     return redirect(url_for('index'))
 
-# --- ROTAS PRINCIPAIS DO SISTEMA ---
+# --- PAINEL PROTEGIDO POR SESSÃO ---
 
 @app.route('/painel')
 def painel():
@@ -44,7 +43,7 @@ def painel():
 def chamada():
     return render_template('chamada.html')
 
-# --- API PARA SETAR SESSÃO VIA FIREBASE ---
+# --- API PARA DEFINIR A SESSÃO VIA LOGIN DO FIREBASE ---
 
 @app.route('/api/set_session', methods=['POST'])
 def set_session():
@@ -66,19 +65,19 @@ def set_session():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-# --- CADASTRO DE PACIENTES ---
+# --- CADASTRO DE CLIENTES ---
 
-@app.route("/pacientes")
-def pacientes():
+@app.route("/clientes")
+def clientes():
     if 'user_id' not in session:
         return redirect(url_for('index'))
-    return render_template("pacientes.html")
+    return render_template("clientes.html")
 
-@app.route("/salvar_paciente", methods=["POST"])
-def salvar_paciente():
+@app.route("/salvar_cliente", methods=["POST"])
+def salvar_cliente():
     try:
         cpf = request.form.get("cpf").replace(".", "").replace("-", "")
-        paciente = {
+        cliente = {
             "nome": request.form.get("nome"),
             "cpf": cpf,
             "data_nascimento": request.form.get("data_nascimento"),
@@ -87,10 +86,10 @@ def salvar_paciente():
             "observacoes": request.form.get("observacoes", "")
         }
 
-        db.collection("pacientes").document(cpf).set(paciente)
-        return render_template("pacientes.html", mensagem="Paciente cadastrado com sucesso!")
+        db.collection("clientes").document(cpf).set(cliente)
+        return render_template("clientes.html", mensagem="Cliente cadastrado com sucesso!")
     except Exception as e:
-        return render_template("pacientes.html", erro=f"Erro ao salvar: {str(e)}")
+        return render_template("clientes.html", erro=f"Erro ao salvar: {str(e)}")
 
 # --- INICIAR APP ---
 

@@ -10,6 +10,13 @@
     <h2>Painel do Consultório</h2>
     <p>Bem-vindo! Seu papel é: <strong>{{ role }}</strong></p>
 
+    {% if role == "ASSISTENTE" %}
+      <a href="/clientes"><button>Cadastrar cliente</button></a>
+      <a href="/agendamentos"><button>Ver Agendamentos</button></a>
+    {% elif role == "PROFISSIONAL" %}
+      <a href="/chamada"><button>Acessar Sala de Espera</button></a>
+    {% endif %}
+
     <a href="/logout"><button>Sair</button></a>
   </div>
 </body>

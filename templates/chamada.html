@@ -7,9 +7,14 @@
 </head>
 <body>
     <div class="chamada-container">
-        <h1>Próximo Paciente:</h1>
+        <h1>🔔 Próximo Paciente</h1>
         <h2 id="nome-paciente">--</h2>
+        <audio id="audio-chamada" src="{{ url_for('static', filename='som_chamada.mp3') }}"></audio>
     </div>
-    <!-- Lógica para ouvir as chamadas em tempo real virá aqui -->
+
+    <script>
+      // (Futuro) Lógica para buscar e atualizar paciente chamado
+      // Exemplo: setInterval ou WebSocket com Firebase
+    </script>
 </body>
 </html>
