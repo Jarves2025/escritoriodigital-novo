@@ -1,20 +1,19 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Sala de Espera</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
-</head>
-<body>
-    <div class="chamada-container">
-        <h1>🔔 Próximo Paciente</h1>
-        <h2 id="nome-paciente">--</h2>
-        <audio id="audio-chamada" src="{{ url_for('static', filename='som_chamada.mp3') }}"></audio>
-    </div>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Chamada</title>
+<link rel="stylesheet" href="{{ url_for('static','estilos.css') }}"></head><body>
+  <div class="public-display"><div class="display-container">
+    <h1>Próximo Cliente:</h1>
+    <h2 id="nome">{{ nome or '--' }}</h2>
+    <audio id="audio" src="{{ url_for('static','som_chamada.mp3') }}"></audio>
+  </div></div>
 
-    <script>
-      // (Futuro) Lógica para buscar e atualizar paciente chamado
-      // Exemplo: setInterval ou WebSocket com Firebase
-    </script>
-</body>
-</html>
+  <script>
+    const nomeEl = document.getElementById('nome');
+    const audio = document.getElementById('audio');
+    if(nomeEl.innerText !== '--'){
+      audio.play();
+    }
+    setInterval(()=>{
+      location.reload();
+    },5000);
+  </script>
+</body></html>

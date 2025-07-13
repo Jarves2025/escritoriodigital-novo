@@ -1,23 +1,31 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Painel</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
-</head>
-<body>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta charset="UTF-8"><title>Painel</title>
+<link rel="stylesheet" href="{{ url_for('static','estilos.css') }}"></head><body>
   <div class="card">
-    <h2>Painel do Consultório</h2>
-    <p>Bem-vindo! Seu papel é: <strong>{{ role }}</strong></p>
-
-    {% if role == "ASSISTENTE" %}
-      <a href="/clientes"><button>Cadastrar cliente</button></a>
-      <a href="/agendamentos"><button>Ver Agendamentos</button></a>
-    {% elif role == "PROFISSIONAL" %}
-      <a href="/chamada"><button>Acessar Sala de Espera</button></a>
+    <h2>Painel - {{ role }}</h2>
+    {% if role=='ASSISTENTE' %}
+      <a href="/clientes"><button>Listar / Agendar Clientes</button></a>
+    {% else %}
+      <h3>Agendamentos de Hoje</h3>
+      {% for a in agendamentos %}
+        <div class="card">
+          {{ a.hora }} — {{ a.nome }}
+          {% if not a.chamado %}
+            <button onclick="chamar('{{ a.id }}')">Chamar</button>
+          {% else %}
+            <span style="color: green;">Chamado</span>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <script>
+        function chamar(id){
+          fetch('/api/chamar/'+id,{method:'POST'})
+            .then(r=>r.json()).then(d=>{
+              window.open('/chamada_publica','_blank');
+              location.reload();
+            })
+        }
+      </script>
     {% endif %}
-
     <a href="/logout"><button>Sair</button></a>
   </div>
-</body>
-</html>
+</body></html>

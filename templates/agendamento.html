@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Agendar</title>
+<link rel="stylesheet" href="{{ url_for('static','estilos.css') }}"></head><body>
+  <div class="card">
+    <h2>Agendar Atendimento</h2>
+    <form action="/salvar_agendamento" method="POST">
+      <input type="hidden" name="cpf" value="{{ cliente.cpf }}">
+      <input type="hidden" name="nome" value="{{ cliente.nome }}">
+      <p><strong>{{ cliente.nome }}</strong> — CPF: {{ cliente.cpf }}</p>
+      <label>Data:</label><input type="date" name="data" required>
+      <label>Hora:</label><input type="time" name="hora" required>
+      <label>Profissional:</label><input type="text" name="profissional" required>
+      <button type="submit">Salvar</button>
+    </form>
+    <a href="/clientes"><button>Voltar</button></a>
+  </div>
+</body></html>
