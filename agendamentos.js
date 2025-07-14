@@ -1,10 +1,4 @@
 // ----- AGENDAMENTOS: layout original com restrição de datas do gestor -----
-
-// Carrega lista de datas permitidas (agendaGestor)
-let agendaGestor = [];
-if (localStorage.getItem('agendaGestor')) {
-    agendaGestor = JSON.parse(localStorage.getItem('agendaGestor'));
-}
 function datasPermitidasGestor() {
     return [...new Set(agendaGestor.map(a => a.data))];
 }
