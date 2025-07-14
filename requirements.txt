@@ -1,11 +1,6 @@
-Flask==2.3.3
-firebase-admin==6.9.0
-google-cloud-firestore==2.21.0
-gunicorn==21.2.0
-
 blinker==1.9.0
 click==8.2.1
-Flask==3.1.1
+Flask==3.1.1         # <-- Apenas esta linha!
 flask-cors==6.0.0
 Flask-SQLAlchemy==3.1.1
 greenlet==3.2.3
