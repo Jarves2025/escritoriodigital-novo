@@ -4,7 +4,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 window._supabase = window._supabase || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const supabase = window._supabase;
 
-// Variável global
+// Lista local SOMENTE para exibir a tela, sempre vinda do banco!
 let clientes = [];
 
 // Carrega lista de clientes do Supabase
@@ -43,7 +43,7 @@ function showClientes() {
     if (!clientes.length) {
         html += `<tr><td colspan="6" style="color:#888; text-align:center;">Nenhum cliente cadastrado</td></tr>`;
     } else {
-        clientes.forEach((cli, idx) => {
+        clientes.forEach(cli => {
             html += `
             <tr>
                 <td>${cli.nome}</td>
@@ -111,7 +111,7 @@ function salvarClienteWizard() {
                 mostrarToast("Cliente cadastrado com sucesso!", "success");
                 fecharClienteModal();
                 carregarClientes();
-            } else if (error.code === "23505") {
+            } else if (error && error.code === "23505") {
                 mostrarToast("Já existe um cliente com esse CPF!", "error");
             } else {
                 mostrarToast("Erro ao salvar cliente!", "error");

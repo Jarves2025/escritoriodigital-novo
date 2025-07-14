@@ -4,9 +4,10 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 window._supabase = window._supabase || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const supabase = window._supabase;
 
+// Agenda do gestor — só guarda a lista da última leitura do banco
 let agendaGestor = [];
 
-// Carrega dias da agenda do gestor
+// Carrega dias da agenda do gestor do Supabase
 function carregarAgendaGestor() {
     supabase
         .from('agenda_gestor')
@@ -50,7 +51,7 @@ function showGestaoAgenda() {
     if (!agendaGestor.length) {
         html += `<tr><td colspan="4" style="color:#888; text-align:center;">Nenhum dia cadastrado</td></tr>`;
     } else {
-        agendaGestor.forEach((dia, idx) => {
+        agendaGestor.forEach(dia => {
             html += `
             <tr>
                 <td>${formatarDataISO(dia.data)}</td>
@@ -105,7 +106,7 @@ function excluirDiaAtendimento(id) {
     }
 }
 
-// Função de formatação de data
+// Formata data para dd/mm/aaaa
 function formatarDataISO(dataISO) {
     if (!dataISO) return '';
     const [ano, mes, dia] = dataISO.split('-');

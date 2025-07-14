@@ -1,12 +1,26 @@
-// ----- AGENDAMENTOS: layout original com restrição de datas do gestor -----
-function datasPermitidasGestor() {
-    return [...new Set(agendaGestor.map(a => a.data))];
-}
-function formatarDataISO(dataISO) {
-    const [ano, mes, dia] = dataISO.split('-');
-    return `${dia}/${mes}/${ano}`;
+const SUPABASE_URL = 'https://jdflixpbupzwnictncbp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkZmxpeHBidXB6d25pY3RuY2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDA4MjksImV4cCI6MjA2ODA3NjgyOX0.pNMVYVU5tw42_qMUhdJI1SE59xs5upVYz0RSyR81AMk';
+
+window._supabase = window._supabase || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = window._supabase;
+
+// Agendamentos sempre lidos do Supabase!
+let agendamentosSupabase = [];
+
+// Carregar lista de agendamentos do Supabase
+function carregarAgendamentos() {
+    supabase
+        .from('agendamentos')
+        .select('*')
+        .order('data', { ascending: true })
+        .order('horario', { ascending: true })
+        .then(({ data, error }) => {
+            agendamentosSupabase = data || [];
+            showAgendamentos();
+        });
 }
 
+// Exibe tela de agendamentos
 function showAgendamentos() {
     currentPage = 'agendamentos';
     setActiveNav('nav-agendamentos');
@@ -19,30 +33,42 @@ function showAgendamentos() {
     listarAgendamentos();
 }
 
+function formatarDataISO(dataISO) {
+    if (!dataISO) return '';
+    const [ano, mes, dia] = dataISO.split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
 function listarAgendamentos() {
     let html = `<table>
         <thead>
             <tr>
                 <th>Data</th>
                 <th>Horário</th>
-                <th>Cliente</th>
+                <th>Nome</th>
+                <th>CPF</th>
                 <th>Telefone</th>
                 <th>Status</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
     `;
-    if (agendamentos.length === 0) {
-        html += `<tr><td colspan="5" style="color:#aaa; text-align:center;">Nenhum agendamento cadastrado</td></tr>`;
+    if (!agendamentosSupabase.length) {
+        html += `<tr><td colspan="7" style="color:#aaa; text-align:center;">Nenhum agendamento cadastrado</td></tr>`;
     } else {
-        agendamentos.forEach(ag => {
+        agendamentosSupabase.forEach(ag => {
             html += `
                 <tr>
                     <td>${formatarDataISO(ag.data)}</td>
                     <td>${ag.horario}</td>
-                    <td>${ag.clienteNome || ag.nome}</td>
+                    <td>${ag.nome || ag.clienteNome}</td>
+                    <td>${ag.cpf}</td>
                     <td>${ag.telefone || ""}</td>
                     <td>${ag.status}</td>
+                    <td>
+                        <button class="btn btn-danger" onclick="excluirAgendamento(${ag.id})">Excluir</button>
+                    </td>
                 </tr>
             `;
         });
@@ -51,7 +77,14 @@ function listarAgendamentos() {
     document.getElementById('tabelaAgendamentos').innerHTML = html;
 }
 
-// ---- NOVO AGENDAMENTO (layout tradicional) ----
+// Para obter as datas configuradas pelo gestor
+function datasPermitidasGestor() {
+    return (typeof agendaGestor !== 'undefined')
+        ? [...new Set(agendaGestor.map(a => a.data))]
+        : [];
+}
+
+// ---- NOVO AGENDAMENTO ----
 function abrirNovoAgendamento() {
     let html = `
         <div class="agendamento-bg">
@@ -92,113 +125,7 @@ function abrirNovoAgendamento() {
         </div>
         </div>
         <style>
-            .agendamento-bg {
-                min-height: 100vh;
-                width: 100vw;
-                display: flex;
-                align-items: flex-start;      /* Alinha ao topo */
-                justify-content: flex-start;  /* Alinha à esquerda */
-                background: #f6fafc;
-                padding-left: 50px;           /* Espaço da esquerda (ajuste como quiser) */
-                padding-top: 60px;            /* Espaço do topo (ajuste como quiser) */
-                }
-            .agendamento-card {
-                background: #fff;
-                border-radius: 22px;
-                box-shadow: 0 8px 32px #22326225, 0 1px 3px #00eaff11;
-                max-width: 520px;
-                min-width: 340px;
-                width: 96vw;
-                padding: 2.8rem 2.4rem 2.2rem 2.4rem;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                animation: cardshow 0.55s cubic-bezier(.21,.79,.41,1.00);
-                margin: 0;
-            }
-            @keyframes cardshow {
-                from { opacity:0; transform: translateY(60px) scale(.93);}
-                to { opacity:1; transform: none;}
-            }
-            .agendamento-titulo {
-                font-size: 2rem;
-                margin-bottom: 2.1rem;
-                font-weight: 800;
-                color: #284b7b;
-                text-align: center;
-                letter-spacing: 2px;
-                text-shadow: 0 2px 12px #b5cfe199;
-            }
-            .agendamento-row {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                margin-bottom: 1.12rem;
-            }
-            .agendamento-row label {
-                margin-bottom: 0.28rem;
-                font-size: 1.09rem;
-                color: #1d2a42;
-                font-weight: 600;
-            }
-            .agendamento-row input,
-            .agendamento-row select {
-                font-size: 1.07rem;
-                border-radius: 10px;
-                border: 1.7px solid #bfd4f6;
-                padding: 0.64rem 0.95rem;
-                margin-bottom: 0.15rem;
-                background: #f8fbff;
-                transition: border .22s;
-            }
-            .agendamento-row input:focus,
-            .agendamento-row select:focus {
-                border-color: #23d2fc;
-                outline: none;
-            }
-            .agendamento-row-2col {
-                flex-direction: row;
-                gap: 1.2rem;
-                margin-bottom: 1.15rem;
-            }
-            .agendamento-row-2col > div { flex:1; }
-            .agendamento-actions {
-                width: 100%;
-                display: flex;
-                justify-content: flex-end;
-                gap: 1.25rem;
-                margin-top: 1.0rem;
-            }
-            .btn-success {
-                background: linear-gradient(90deg,#18d586,#11b0e3 90%);
-                color: #fff;
-                border: none;
-                border-radius: 7px;
-                font-weight: 700;
-                font-size: 1.06rem;
-                padding: 0.69rem 2.2rem;
-                cursor: pointer;
-                box-shadow: 0 2px 8px #cbeeff33;
-                transition: background .21s,box-shadow .25s;
-            }
-            .btn-success:hover { background: linear-gradient(90deg,#1ee9ab,#25cbfa 80%);}
-            .btn-secondary {
-                background: #637182;
-                color: #fff;
-                border: none;
-                border-radius: 7px;
-                font-weight: 700;
-                font-size: 1.06rem;
-                padding: 0.69rem 2.2rem;
-                cursor: pointer;
-                box-shadow: 0 1px 6px #b6c2e022;
-                transition: background .18s;
-            }
-            .btn-secondary:hover { background: #3f5265; }
-            @media (max-width: 650px){
-                .agendamento-card { padding: 1.2rem 0.5rem;}
-                .agendamento-row-2col { flex-direction: column; gap: 0.25rem;}
-            }
+            /* ...seu CSS aqui (igual ao anterior)... */
         </style>
     `;
 
@@ -214,7 +141,8 @@ function abrirNovoAgendamento() {
         selectData.appendChild(opt);
     });
 }
-// ---- Mascara para CPF e Telefone ----
+
+// Máscara para CPF e Telefone
 function mascaraCpf(input) {
     let value = input.value.replace(/\D/g, '');
     value = value.replace(/(\d{3})(\d)/, "$1.$2");
@@ -229,14 +157,15 @@ function mascaraTelefone(input) {
     input.value = value;
 }
 
-// ---- Carrega horários disponíveis para a data escolhida ----
+// Carrega horários disponíveis para a data escolhida
 function carregarHorariosDisponiveis() {
     const data = document.getElementById('dataAgendamento').value;
     const select = document.getElementById('horarioSelect');
     select.innerHTML = '<option value="">Selecione o horário</option>';
 
-    // Busca blocos horários permitidos para a data
-    const blocos = agendaGestor.filter(d => d.data === data);
+    const blocos = typeof agendaGestor !== 'undefined'
+        ? agendaGestor.filter(d => d.data === data)
+        : [];
     if (!blocos.length) return;
 
     let horarios = [];
@@ -252,14 +181,14 @@ function carregarHorariosDisponiveis() {
     });
     // Remove horários já ocupados
     horarios.forEach(horario => {
-        const ocupado = agendamentos.some(ag => ag.data === data && ag.horario === horario);
+        const ocupado = agendamentosSupabase.some(ag => ag.data === data && ag.horario === horario);
         if (!ocupado) {
             select.innerHTML += `<option value="${horario}">${horario}</option>`;
         }
     });
 }
 
-// ---- Salva novo agendamento ----
+// ---- Salva novo agendamento no Supabase ----
 function salvarNovoAgendamento(event) {
     event.preventDefault();
     const cpf = document.getElementById('cpfAgendamento').value.trim();
@@ -268,7 +197,6 @@ function salvarNovoAgendamento(event) {
     const data = document.getElementById('dataAgendamento').value;
     const horario = document.getElementById('horarioSelect').value;
 
-    // Checagem das datas permitidas
     if (!datasPermitidasGestor().includes(data)) {
         mostrarToast("Só é possível agendar para dias configurados pelo gestor!", "error");
         document.getElementById('dataAgendamento').value = '';
@@ -281,15 +209,32 @@ function salvarNovoAgendamento(event) {
         return;
     }
 
-    agendamentos.push({
+    supabase.from('agendamentos').insert([{
         cpf,
         nome,
         telefone,
         data,
         horario,
         status: "AGENDADO"
+    }]).then(({ error }) => {
+        if (!error) {
+            mostrarToast("Agendamento realizado!", "success");
+            carregarAgendamentos();
+        } else {
+            mostrarToast("Erro ao agendar!", "error");
+        }
     });
-    syncStorage();
-    mostrarToast("Agendamento realizado!", "success");
-    showAgendamentos();
+}
+
+// ---- Excluir agendamento do Supabase ----
+function excluirAgendamento(id) {
+    if (!confirm('Excluir este agendamento?')) return;
+    supabase.from('agendamentos').delete().eq('id', id).then(({ error }) => {
+        if (!error) {
+            mostrarToast("Agendamento excluído!", "success");
+            carregarAgendamentos();
+        } else {
+            mostrarToast("Erro ao excluir agendamento!", "error");
+        }
+    });
 }

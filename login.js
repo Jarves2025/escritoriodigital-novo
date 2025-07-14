@@ -1,57 +1,67 @@
-let currentUser = null;
+const SUPABASE_URL = 'https://jdflixpbupzwnictncbp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkZmxpeHBidXB6d25pY3RuY2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDA4MjksImV4cCI6MjA2ODA3NjgyOX0.pNMVYVU5tw42_qMUhdJI1SE59xs5upVYz0RSyR81AMk';
 
-function login(event) {
+window._supabase = window._supabase || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = window._supabase;
+
+// Função de login (exemplo: tabela "usuarios" com campos "email" e "senha")
+async function login(event) {
     event.preventDefault();
-    const email = document.getElementById('email').value.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const senha = document.getElementById('senha').value.trim();
+    const email = document.getElementById("email").value.trim();
+    const senha = document.getElementById("senha").value.trim();
 
-
-    // Lógica simples para exemplo; personalize para seu caso real
-    let perfil = "";
-    if (email === "gestor@escritorio.com" && senha === "gestor123") perfil = "GESTOR";
-    else if (email === "profissional@escritorio.com" && senha === "prof123") perfil = "PROFISSIONAL";
-    else if (email === "assistente@escritorio.com" && senha === "assist123") perfil = "ASSISTENTE";
-    else {
-        mostrarToast('Usuário ou senha inválidos', 'error');
+    if (!email || !senha) {
+        mostrarToast("Preencha o email e a senha!", "error");
         return false;
     }
 
-    // Salva usuário logado
-    currentUser = { email, perfil };
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    document.getElementById('loginContainer').style.display = 'none';
-    document.getElementById('mainContainer').style.display = 'block';
+    // Busca usuário correspondente no Supabase
+    let { data, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('email', email)
+        .eq('senha', senha);
 
-    // Mostra menu Gestão da Agenda só para gestor
-    if (perfil === 'GESTOR') {
-        document.getElementById('nav-gestaoagenda').style.display = '';
-    } else {
-        document.getElementById('nav-gestaoagenda').style.display = 'none';
+    if (error) {
+        mostrarToast("Erro ao acessar banco de dados!", "error");
+        return false;
+    }
+    if (!data || !data.length) {
+        mostrarToast("Usuário ou senha inválidos!", "error");
+        return false;
     }
 
+    // Autenticado — pode gravar na session/localStorage se quiser (apenas nome/id/perfil)
+    const usuario = data[0];
+    window.usuarioLogado = usuario; // ou use localStorage/sessionStorage conforme preferir
+
+    // Exemplo: exibe menus conforme perfil (se houver)
+    if (usuario.perfil === "admin") {
+        document.getElementById("nav-gestaoagenda").style.display = "";
+        document.getElementById("nav-clientes").style.display = "";
+        // ...outros menus...
+    }
+    // Esconde tela de login e mostra dashboard
+    document.getElementById("loginContainer").style.display = "none";
     showDashboard();
     return false;
 }
 
-// Quando recarrega a página (já está logado)
-window.onload = function() {
-    const user = localStorage.getItem('currentUser');
-    if (user) {
-        currentUser = JSON.parse(user);
-        document.getElementById('loginContainer').style.display = 'none';
-        document.getElementById('mainContainer').style.display = 'block';
-        if (currentUser.perfil === 'GESTOR') {
-            document.getElementById('nav-gestaoagenda').style.display = '';
-        }
-        showDashboard();
-    }
+// Função de logout
+function logout() {
+    window.usuarioLogado = null;
+    // Limpa campos e volta tela de login
+    document.getElementById("loginContainer").style.display = "";
+    document.getElementById("content").innerHTML = "";
 }
 
-// Função de logout (exemplo)
-function logout() {
-    localStorage.removeItem('currentUser');
-    currentUser = null;
-    document.getElementById('mainContainer').style.display = 'none';
-    document.getElementById('loginContainer').style.display = 'flex';
-    document.getElementById('nav-gestaoagenda').style.display = 'none';
+// Função opcional para checar se está logado ao abrir a página
+function checarLogin() {
+    if (!window.usuarioLogado) {
+        document.getElementById("loginContainer").style.display = "";
+        document.getElementById("content").innerHTML = "";
+    } else {
+        document.getElementById("loginContainer").style.display = "none";
+        showDashboard();
+    }
 }

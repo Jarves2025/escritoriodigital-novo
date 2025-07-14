@@ -10,7 +10,7 @@ prof123
 
 Assistente
 assistente@escritorio.com
-assist123
+atend123
 -----------------------------------------
 Banco de Dados: Supabase
 Projeto: sistema de agendamentos
@@ -22,7 +22,7 @@ API Key:
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkZmxpeHBidXB6d25pY3RuY2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDA4MjksImV4cCI6MjA2ODA3NjgyOX0.pNMVYVU5tw42_qMUhdJI1SE59xs5upVYz0RSyR81AMk
 ---------------------------------------------------
 Subir alterações para o Render:
-git add clientes.js
+git add .
 git commit -m "Atualiza" 
 git push
 
