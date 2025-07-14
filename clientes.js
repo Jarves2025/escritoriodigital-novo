@@ -1,9 +1,14 @@
 // ------------ CLIENTES (SUPABASE) ------------
 
-// Configuração Supabase
-const SUPABASE_URL = 'https://jdflixpbupzwnictncbp.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkZmxpeHBidXB6d25pY3RuY2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDA4MjksImV4cCI6MjA2ODA3NjgyOX0.pNMVYVU5tw42_qMUhdJI1SE59xs5upVYz0RSyR81AMk';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Usa o Supabase já criado no window (feito em utils.js OU no HTML antes dos outros scripts)
+if (!window.supabase) {
+    const SUPABASE_URL = 'https://jdflixpbupzwnictncbp.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkZmxpeHBidXB6d25pY3RuY2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDA4MjksImV4cCI6MjA2ODA3NjgyOX0.pNMVYVU5tw42_qMUhdJI1SE59xs5upVYz0RSyR81AMk';
+    window.supabase = window.supabase || window.supabase.createClient
+        ? window.supabase
+        : window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+}
+const supabase = window.supabase;
 
 // Variável global
 let clientes = [];
@@ -79,25 +84,18 @@ async function salvarClienteWizard() {
         senha_gov: document.getElementById('senhaGovCliente').value.trim(),
         observacoes: document.getElementById('observacoesCliente').value.trim()
     };
-    // Checa se os campos principais estão preenchidos
     if (!novoCli.nome || !novoCli.cpf || !novoCli.telefone) {
         mostrarToast("Preencha todos os campos obrigatórios!", "error");
         return;
     }
-
-    // Verifica se estamos editando (se existe data-edit-id no modal)
     const modal = document.getElementById('clienteModal');
     const editId = modal.getAttribute('data-edit-id');
-
     let error;
     if (editId) {
-        // Atualiza cliente existente
         ({ error } = await supabase.from('clientes').update(novoCli).eq('id', editId));
     } else {
-        // Cria novo cliente
         ({ error } = await supabase.from('clientes').insert([novoCli]));
     }
-
     if (!error) {
         mostrarToast(editId ? "Cliente atualizado com sucesso!" : "Cliente cadastrado com sucesso!", "success");
         fecharClienteModal();
@@ -107,27 +105,21 @@ async function salvarClienteWizard() {
     } else {
         mostrarToast("Erro ao salvar cliente!", "error");
     }
-
-    // Sempre remove o modo edição
     modal.removeAttribute('data-edit-id');
 }
 
-// Função para fechar o modal wizard
 function fecharClienteModal() {
     document.getElementById('clienteModal').style.display = 'none';
     resetarWizardCliente();
-    // Remove o modo edição ao fechar
     document.getElementById('clienteModal').removeAttribute('data-edit-id');
 }
 
-// Limpa campos e volta etapa 1 (se quiser cadastrar outro)
 function resetarWizardCliente() {
     document.getElementById('clienteWizardForm').reset();
-    wizardClienteVoltarEtapa(1); // Essa função já está aí no seu sistema
+    wizardClienteVoltarEtapa(1);
     document.getElementById('wizardClienteResumo').innerHTML = "";
 }
 
-// Fecha o modal ao clicar fora dele (opcional)
 window.onclick = function(event) {
     const modal = document.getElementById('clienteModal');
     if (event.target === modal) {
@@ -135,14 +127,10 @@ window.onclick = function(event) {
     }
 };
 
-// Função para editar cliente usando o modal wizard
 function editarCliente(id) {
     const cli = clientes.find(c => c.id === id);
     if (!cli) return;
-
-    // Abre o modal wizard
     document.getElementById('clienteModal').style.display = 'block';
-    // Preenche os campos do modal com os dados do cliente
     document.getElementById('nomeCliente').value = cli.nome || '';
     document.getElementById('cpfCliente').value = cli.cpf || '';
     document.getElementById('telefoneCliente').value = cli.telefone || '';
@@ -156,15 +144,10 @@ function editarCliente(id) {
     document.getElementById('ufCliente').value = cli.uf || '';
     document.getElementById('senhaGovCliente').value = cli.senha_gov || '';
     document.getElementById('observacoesCliente').value = cli.observacoes || '';
-
-    // Salva o id do cliente em edição (usado na função de salvar)
     document.getElementById('clienteModal').setAttribute('data-edit-id', id);
-
-    // Leva o wizard para a etapa 1 (se quiser)
     wizardClienteVoltarEtapa(1);
 }
 
-// Excluir cliente
 async function excluirCliente(id) {
     if (!confirm('Excluir este cliente?')) return;
     const { error } = await supabase.from('clientes').delete().eq('id', id);
@@ -176,7 +159,4 @@ async function excluirCliente(id) {
     }
 }
 
-// Chama carregarClientes assim que a página/carregamento terminar
-window.onload = function() {
-    carregarClientes();
-};
+// Não deixe window.onload duplicado em mais de um JS. Use apenas um ou mova para dashboard.js, por exemplo.
