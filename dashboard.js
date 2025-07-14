@@ -1,4 +1,4 @@
-var supabase = window._supabase;
+var supabase = window.supabase;
 
 
 // Exibe o painel inicial (dashboard) com resumos dos dados

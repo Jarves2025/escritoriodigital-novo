@@ -1,4 +1,4 @@
-var supabase = window._supabase;
+var supabase = window.supabase;
 
 
 // Lista de check-ins sempre lida do Supabase!

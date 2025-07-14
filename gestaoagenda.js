@@ -1,4 +1,4 @@
-var supabase = window._supabase;
+var supabase = window.supabase;
 
 
 // Agenda do gestor — só guarda a lista da última leitura do banco

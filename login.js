@@ -1,5 +1,4 @@
-var supabase = window._supabase;
-
+var supabase = window.supabase;
 
 // Função de login (exemplo: tabela "usuarios" com campos "email" e "senha")
 async function login(event) {
