@@ -1,7 +1,6 @@
 // Variáveis globais
 let currentPage = 'dashboard';
 
-let clientes = [];
 let agendamentos = [];
 let atendidos = [];
 
