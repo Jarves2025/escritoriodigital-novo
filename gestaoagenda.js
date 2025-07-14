@@ -1,10 +1,9 @@
-// ------ GESTÃO DA AGENDA DO GESTOR (SUPABASE) ------
-
 const SUPABASE_URL = 'https://jdflixpbupzwnictncbp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkZmxpeHBidXB6d25pY3RuY2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDA4MjksImV4cCI6MjA2ODA3NjgyOX0.pNMVYVU5tw42_qMUhdJI1SE59xs5upVYz0RSyR81AMk';
 
-window.supabase = window.supabase || supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const supabase = window.supabase;
+// ISSO AQUI, SEM IF, SEM window:
+const supabase = window.supabase || supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+window.supabase = supabase;
 
 
 // Variável global só aqui!
