@@ -1,0 +1,340 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+.login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+.login-form { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 400px; }
+.login-form h2 { text-align: center; margin-bottom: 2rem; color: #333; }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; color: #555; font-weight: 500; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 5px; font-size: 1rem; transition: border-color 0.3s; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; }
+.btn { padding: 0.75rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; transition: all 0.3s; }
+.btn-primary { background: #667eea; color: white; }
+.btn-primary:hover { background: #5a6fd8; }
+.btn-success { background: #28a745; color: white; }
+.btn-warning { background: #ffc107; color: #212529; }
+.btn-danger { background: #dc3545; color: white; }
+.btn-info { background: #17a2b8; color: white; }
+.btn-secondary { background: #6c757d; color: white; }
+.btn-large { padding: 1rem 2rem; font-size: 1.2rem; }
+.main-container { display: none; }
+.sidebar {
+    position: fixed; left: 0; top: 0; width: 250px; height: 100vh;
+    background: #223262; /* azul escuro elegante */
+    color: white; padding: 1rem 0;
+}
+.sidebar h3 { text-align: center; margin-bottom: 2rem; color: #ecf0f1; }
+.sidebar a {
+    display: block; padding: 1rem 1.5rem; color: #bdc3c7;
+    text-decoration: none; transition: all 0.3s;
+}
+.sidebar a:hover, .sidebar a.active { background: #2d437b; color: #ecf0f1; }
+.content { margin-left: 250px; padding: 2rem; min-height: 100vh; background: #ecf0f1; }
+table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+th, td { padding: 1.25rem; text-align: left; border-bottom: 1px solid #ddd; font-size: 1.06rem; }
+th { background: #f8f9fa; font-weight: 600; }
+tr:hover { background: #f8f9fa; }
+.badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.95rem; font-weight: 500; }
+.badge.success { background: #d4edda; color: #155724; }
+.badge.warning { background: #fff3cd; color: #856404; }
+.badge.info { background: #d1ecf1; color: #0c5460; }
+.badge.secondary { background: #e2e3e5; color: #383d41; }
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+.modal-content {
+    background: white;
+    margin: 2% auto;
+    padding: 0;
+    width: 98%;
+    max-width: 740px;
+    border-radius: 16px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.16);
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem 1rem 2rem; border-bottom: 1px solid #eee; }
+.modal-header h3 { color: #333; }
+.close { font-size: 2rem; cursor: pointer; color: #aaa; }
+.close:hover { color: #000; }
+.wizard-steps {
+    display: flex; justify-content: center; align-items: center;
+    gap: 2rem; padding: 1.5rem 0 0.8rem 0;
+}
+.wizard-step {
+    display: flex; flex-direction: column; align-items: center; font-weight: 600;
+    font-size: 1.1rem; color: #999;
+}
+.wizard-step.active { color: #667eea; }
+.wizard-step .circle {
+    width: 34px; height: 34px; border-radius: 50%; background: #eee; color: #666;
+    display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem;
+    transition: background 0.3s, color 0.3s;
+}
+.wizard-step.active .circle { background: #667eea; color: #fff; }
+.wizard-body { padding: 2rem 2.5rem 2.2rem 2.5rem; }
+.wizard-section-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 1.5rem; color: #667eea; letter-spacing: 1px; }
+.wizard-row { display: flex; gap: 1.1rem; }
+@media (max-width: 700px) { .wizard-row { flex-direction: column; } }
+.wizard-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.2rem; }
+.wizard-summary { background: #f5f5ff; border-radius: 10px; padding: 1.3rem 2rem; margin-bottom: 1.5rem; border: 1px solid #eaeaff; }
+.wizard-summary label { font-weight: 500; color: #555; }
+.form-group { flex: 1; margin-bottom: 1rem; }
+.form-group input, .form-group select, .form-group textarea { font-size: 1.1rem; }
+input:invalid { border-color: #e74c3c; }
+input:valid:not(:placeholder-shown) { border-color: #2ecc40; }
+.form-row, .wizard-row { margin-bottom: 0.9rem; }
+#nomeCliente, #nomeAgendamento { min-width: 250px; }
+#cpfCliente, #cpfAgendamento { max-width: 150px; }
+#telefoneCliente, #telefoneAgendamento { max-width: 150px; }
+#cepCliente { max-width: 120px; }
+#numeroCliente { max-width: 85px; }
+#ufCliente { max-width: 80px; }
+@media (max-width: 800px) {
+    .modal-content { max-width: 99vw; }
+    .wizard-body, .modal-header { padding-left: 1rem !important; padding-right: 1rem !important; }
+    .wizard-row { flex-direction: column; gap: 0.4rem; }
+    #nomeCliente { min-width: unset; }
+    #cpfCliente, #telefoneCliente, #cepCliente { width: 100%; max-width: unset; }
+}
+.toast-container {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 240px;
+}
+.toast {
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 6px 32px rgba(0,0,0,0.12);
+    font-size: 1.1rem;
+    animation: fadeInDown 0.6s;
+    opacity: 0.95;
+}
+.toast.success { background: #2ecc40; }
+.toast.error   { background: #e74c3c; }
+.toast.info    { background: #3498db; }
+@keyframes fadeInDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 0.95; }
+}
+
+/* Dashboard Cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+    margin-top: 24px; /* Espaço de 1,5cm abaixo do título */
+}
+.stat-card {
+    background: linear-gradient(135deg, #667eea33 0%, #764ba222 100%);
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    border: 1px solid #eaeaff;
+}
+.stat-card .numero {
+    display: block; font-size: 2.2rem; font-weight: bold; color: #667eea;
+}
+.stat-card .label { color: #555; font-size: 1.04rem; letter-spacing: 1px; margin-top: 0.4rem; }
+.card-listagem { margin-top: 2rem; }
+.card-listagem h3 { margin-bottom: 1.2rem; color: #667eea; font-size: 1.2rem; }
+.card-listagem ul { background: #fff; border-radius: 12px; padding: 0.8rem 1.5rem; box-shadow: 0 1px 7px rgba(0,0,0,0.04); list-style: none; }
+.card-listagem li { padding: 1rem 0; border-bottom: 1px solid #eee; color: #222; font-size: 1.04rem; }
+.card-listagem li:last-child { border-bottom: none; }
+.empty-state { color: #999; font-style: italic; text-align: center; margin: 2rem 0; }
+
+/* Área maior data/status na Gestão de Agendamentos */
+.filters input[type="date"], .filters select {
+    font-size: 1.2rem;
+    height: 2.6rem;
+    padding: 0.4rem 1.3rem;
+    min-width: 200px;
+    margin-right: 10px;
+}
+.filters select { min-width: 170px; }
+.filters { margin: 1.8rem 0 1.2rem 0; display: flex; gap: 2rem; }
+
+/* Espaçamento Dashboard: nome (h2) e cards */
+.dashboard-title {
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #223262;
+    margin-bottom: 24px !important;
+    margin-top: 8px;
+    letter-spacing: 1px;
+}
+.dashboard-date {
+    font-size: 1.08rem;
+    color: #444;
+    margin-bottom: 10px;
+}
+#dashboard-agendamentos-title {
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+#dashboard-agendamentos-table {
+    margin-top: 24px;
+}
+
+/* Check-in: campo busca CPF maior */
+#buscaClienteCheckin {
+    font-size: 1.2rem;
+    height: 2.7rem;
+    padding: 0.4rem 1.2rem;
+    min-width: 320px;
+    margin-bottom: 1.2rem;
+    background: #fff;
+    border: 2px solid #223262;
+    border-radius: 8px;
+}
+
+/* Painel de chamada — fundo preto, nome fixo, sem efeito */
+.painel-black-bg {
+    background: #181818 !important;
+    color: #fff !important;
+}
+.painel-chamada-fixa {
+    background: none !important;
+    border-radius: 32px !important;
+    padding: 4.2rem 2.2rem !important;
+    margin: 2.5rem 0 !important;
+    min-width: 480px;
+    box-shadow: none !important;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.painel-chamada-fixa .nome-cliente {
+    font-size: 4.2rem;
+    font-weight: bold;
+    margin: 1.4rem 0 1.2rem 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 10px #0009;
+    color: #fff;
+}
+.painel-chamada-fixa .instrucao {
+    font-size: 2rem;
+    margin-top: 1.2rem;
+    background: #222;
+    padding: 1.3rem 2rem;
+    border-radius: 15px;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 2px 6px #0007;
+}
+.painel-black-bg .header h1 { color: #fff; }
+.painel-black-bg .footer { background: #000 !important; color: #fff; }
+@media (max-width: 800px) {
+    .painel-chamada-fixa { min-width: 90vw; padding: 1rem; }
+    .painel-chamada-fixa .nome-cliente { font-size: 2.5rem; }
+}
+.checkin-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.3rem;
+    margin-top: 2rem;
+}
+.checkin-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px #22326222;
+    padding: 1.5rem 2rem;
+    transition: box-shadow 0.3s;
+    border: 2px solid #eaeaff;
+}
+.checkin-card:hover {
+    box-shadow: 0 4px 16px #22326244;
+    border-color: #22326266;
+}
+.checkin-card-nome {
+    font-size: 1.35rem;
+    font-weight: bold;
+    color: #223262;
+    margin-bottom: 0.3rem;
+}
+.checkin-card-horario {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 0.2rem;
+}
+.checkin-card-status {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 0.1rem;
+}
+.btn-large { font-size: 1.17rem; padding: 0.85rem 2.1rem; border-radius: 7px; }
+
+.progress-glow {
+    width: 100px;
+    height: 12px;
+    background: linear-gradient(90deg,#00fff7 0%,#137ce7 70%,#fff 100%);
+    border-radius: 14px;
+    margin: 0 auto 18px auto;
+    box-shadow: 0 0 24px #00fff788;
+    position: relative;
+    overflow: hidden;
+}
+.progress-glow::after {
+    content: "";
+    position: absolute;
+    left: -40px; top: 0; bottom: 0;
+    width: 50px; background: rgba(255,255,255,0.45);
+    filter: blur(4px);
+    animation: barMove 2.8s linear infinite;
+}
+@keyframes barMove {
+    0% { left: -40px; }
+    100% { left: 100px; }
+}
+.nome-cliente {
+    font-size: 4.2rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2.2px;
+    margin: 0 0 1.4rem 0;
+    background: linear-gradient(90deg,#27e8fa 40%,#4286f4 70%,#fff 100%);
+    color: transparent;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 12px #223262aa);
+    text-shadow: 0 4px 28px #21f6ff50, 0 1px 0 #fff4;
+    animation: pulseGlow 2.1s infinite;
+}
+@keyframes pulseGlow {
+    0%, 100% { text-shadow: 0 4px 28px #21f6ff50, 0 1px 0 #fff4; }
+    50% { text-shadow: 0 8px 36px #00fff755, 0 1px 0 #fff8; }
+}
+.agendamento-bg {
+    min-height: 86vh;
+    width: 100vw;
+    display: flex;
+    align-items: flex-start;  /* Alinha topo */
+    justify-content: flex-start; /* Alinha à esquerda */
+    background: #f6fafc;
+    padding-left: 5vw;        /* Espaço da esquerda */
+    padding-top: 4vw;
+}
+.agendamento-card {
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 8px 32px #22326225, 0 1px 3px #00eaff11;
+    max-width: 510px;
+    width: 96vw;
+    min-width: 320px;
+    padding: 2.8rem 2.4rem 2.2rem 2.4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: cardshow 0.55s cubic-bezier(.21,.79,.41,1.00);
+}

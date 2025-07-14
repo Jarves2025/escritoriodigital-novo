@@ -1,0 +1,11 @@
+Gestor
+gestor@escritorio.com
+gestor123
+
+Profissional
+profissional@escritorio.com
+prof123
+
+Assistente
+assistente@escritorio.com
+assist123
