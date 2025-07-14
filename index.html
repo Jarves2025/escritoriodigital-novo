@@ -32,7 +32,7 @@
             <a href="#" onclick="showFila()" id="nav-fila">🎯 Fila de Atendimento</a>
             <a href="#" onclick="showRelatorio()" id="nav-relatorio">📄 Relatório</a>
             <a href="#" onclick="showPainel()" id="nav-painel">📺 Painel de Chamada</a>
-            <a href="#" id="nav-gestaoagenda" style="display:none;" onclick="showGestaoAgenda()">
+            <a href="#" id="nav-gestaoagenda" style="display:none;" onclick="carregarAgendaGestor()">
     📅 Gestão da Agenda
 </a>
             <a href="#" onclick="logout()" id="nav-logout">🚪 Sair</a>
@@ -225,6 +225,8 @@
     </form>
   </div>
 </div>
+    <!-- Importa o SDK do Supabase primeiro -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Scripts -->
     <script src="utils.js"></script>
     <script src="dashboard.js"></script>

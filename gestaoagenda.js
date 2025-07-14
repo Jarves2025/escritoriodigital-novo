@@ -1,14 +1,26 @@
-// ------ GESTÃO DA AGENDA DO GESTOR ------
+// ------ GESTÃO DA AGENDA DO GESTOR (SUPABASE) ------
 
+// Configuração Supabase
+const SUPABASE_URL = 'https://jdflixpbupzwnictncbp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkZmxpeHBidXB6d25pY3RuY2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDA4MjksImV4cCI6MjA2ODA3NjgyOX0.pNMVYVU5tw42_qMUhdJI1SE59xs5upVYz0RSyR81AMk';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Variável global
 let agendaGestor = [];
-if (localStorage.getItem('agendaGestor')) {
-    agendaGestor = JSON.parse(localStorage.getItem('agendaGestor'));
+
+// Carrega dias da agenda do gestor
+async function carregarAgendaGestor() {
+    const { data, error } = await supabase
+        .from('agenda_gestor')
+        .select('*')
+        .order('data', { ascending: true })
+        .order('inicio', { ascending: true });
+    agendaGestor = data || [];
+    showGestaoAgenda();
 }
 
-function syncAgendaGestor() {
-    localStorage.setItem('agendaGestor', JSON.stringify(agendaGestor));
-}
-
+// Exibe tela de Gestão da Agenda
 function showGestaoAgenda() {
     currentPage = 'gestaoagenda';
     setActiveNav('nav-gestaoagenda');
@@ -37,48 +49,66 @@ function showGestaoAgenda() {
                 </thead>
                 <tbody>
     `;
-    if (agendaGestor.length === 0) {
+    if (!agendaGestor.length) {
         html += `<tr><td colspan="4" style="color:#888; text-align:center;">Nenhum dia cadastrado</td></tr>`;
     } else {
-        agendaGestor
-            .sort((a, b) => (a.data + a.inicio).localeCompare(b.data + b.inicio))
-            .forEach((dia, idx) => {
-                html += `
-                <tr>
-                    <td>${formatarDataISO(dia.data)}</td>
-                    <td>${dia.inicio}</td>
-                    <td>${dia.fim}</td>
-                    <td>
-                        <button class="btn btn-danger" onclick="excluirDiaAtendimento(${idx})">Excluir</button>
-                    </td>
-                </tr>
-                `;
-            });
+        agendaGestor.forEach((dia, idx) => {
+            html += `
+            <tr>
+                <td>${formatarDataISO(dia.data)}</td>
+                <td>${dia.inicio}</td>
+                <td>${dia.fim}</td>
+                <td>
+                    <button class="btn btn-danger" onclick="excluirDiaAtendimento(${dia.id})">Excluir</button>
+                </td>
+            </tr>
+            `;
+        });
     }
     html += `</tbody></table></div>`;
     document.getElementById('content').innerHTML = html;
 }
 
-function salvarNovoDiaAtendimento(e) {
+// Adiciona novo dia na agenda (Supabase)
+async function salvarNovoDiaAtendimento(e) {
     e.preventDefault();
     const data = document.getElementById('novoDiaData').value;
     const inicio = document.getElementById('novoDiaInicio').value;
     const fim = document.getElementById('novoDiaFim').value;
     if (!data || !inicio || !fim) return;
-    agendaGestor.push({ data, inicio, fim });
-    syncAgendaGestor();
-    mostrarToast("Dia cadastrado!", "success");
-    showGestaoAgenda();
-}
-
-function excluirDiaAtendimento(idx) {
-    if (confirm('Excluir este horário de atendimento?')) {
-        agendaGestor.splice(idx, 1);
-        syncAgendaGestor();
-        showGestaoAgenda();
+    const { error } = await supabase
+        .from('agenda_gestor')
+        .insert([{ data, inicio, fim }]);
+    if (!error) {
+        mostrarToast("Dia cadastrado!", "success");
+        carregarAgendaGestor();
+    } else {
+        mostrarToast("Erro ao cadastrar!", "error");
     }
 }
+
+// Excluir dia da agenda (Supabase)
+async function excluirDiaAtendimento(id) {
+    if (confirm('Excluir este horário de atendimento?')) {
+        await supabase
+            .from('agenda_gestor')
+            .delete()
+            .eq('id', id);
+        mostrarToast("Dia excluído!", "success");
+        carregarAgendaGestor();
+    }
+}
+
+// Função de formatação de data
 function formatarDataISO(dataISO) {
+    if (!dataISO) return '';
     const [ano, mes, dia] = dataISO.split('-');
     return `${dia}/${mes}/${ano}`;
+}
+
+// Carrega agenda ao abrir tela
+if (typeof window !== "undefined") {
+    if (window.location.hash === "#gestaoagenda") {
+        carregarAgendaGestor();
+    }
 }
