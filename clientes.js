@@ -1,22 +1,22 @@
-
 const SUPABASE_URL = 'https://jdflixpbupzwnictncbp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkZmxpeHBidXB6d25pY3RuY2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDA4MjksImV4cCI6MjA2ODA3NjgyOX0.pNMVYVU5tw42_qMUhdJI1SE59xs5upVYz0RSyR81AMk';
 
 window._supabase = window._supabase || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const supabase = window._supabase;
 
-
 // Variável global
 let clientes = [];
 
 // Carrega lista de clientes do Supabase
-async function carregarClientes() {
-    const { data, error } = await supabase
+function carregarClientes() {
+    supabase
         .from('clientes')
         .select('*')
-        .order('nome', { ascending: true });
-    clientes = data || [];
-    showClientes();
+        .order('nome', { ascending: true })
+        .then(({ data, error }) => {
+            clientes = data || [];
+            showClientes();
+        });
 }
 
 // Mostra a tela/lista de clientes
@@ -63,8 +63,16 @@ function showClientes() {
     document.getElementById('content').innerHTML = html;
 }
 
+// Abrir modal wizard do cliente
+function abrirCadastroCliente() {
+    document.getElementById('wizardClienteTitulo').innerText = 'Novo Cliente';
+    document.getElementById('clienteModal').style.display = 'block';
+    resetarWizardCliente();
+    document.getElementById('clienteModal').removeAttribute('data-edit-id');
+}
+
 // Função chamada pelo botão "Salvar Cliente" no modal wizard
-async function salvarClienteWizard() {
+function salvarClienteWizard() {
     const novoCli = {
         nome: document.getElementById('nomeCliente').value.trim(),
         cpf: document.getElementById('cpfCliente').value.trim(),
@@ -86,22 +94,30 @@ async function salvarClienteWizard() {
     }
     const modal = document.getElementById('clienteModal');
     const editId = modal.getAttribute('data-edit-id');
-    let error;
     if (editId) {
-        ({ error } = await supabase.from('clientes').update(novoCli).eq('id', editId));
+        supabase.from('clientes').update(novoCli).eq('id', editId).then(({ error }) => {
+            if (!error) {
+                mostrarToast("Cliente atualizado com sucesso!", "success");
+                fecharClienteModal();
+                carregarClientes();
+            } else {
+                mostrarToast("Erro ao editar cliente!", "error");
+            }
+            modal.removeAttribute('data-edit-id');
+        });
     } else {
-        ({ error } = await supabase.from('clientes').insert([novoCli]));
+        supabase.from('clientes').insert([novoCli]).then(({ error }) => {
+            if (!error) {
+                mostrarToast("Cliente cadastrado com sucesso!", "success");
+                fecharClienteModal();
+                carregarClientes();
+            } else if (error.code === "23505") {
+                mostrarToast("Já existe um cliente com esse CPF!", "error");
+            } else {
+                mostrarToast("Erro ao salvar cliente!", "error");
+            }
+        });
     }
-    if (!error) {
-        mostrarToast(editId ? "Cliente atualizado com sucesso!" : "Cliente cadastrado com sucesso!", "success");
-        fecharClienteModal();
-        carregarClientes();
-    } else if (error.code === "23505") {
-        mostrarToast("Já existe um cliente com esse CPF!", "error");
-    } else {
-        mostrarToast("Erro ao salvar cliente!", "error");
-    }
-    modal.removeAttribute('data-edit-id');
 }
 
 function fecharClienteModal() {
@@ -126,6 +142,7 @@ window.onclick = function(event) {
 function editarCliente(id) {
     const cli = clientes.find(c => c.id === id);
     if (!cli) return;
+    document.getElementById('wizardClienteTitulo').innerText = 'Editar Cliente';
     document.getElementById('clienteModal').style.display = 'block';
     document.getElementById('nomeCliente').value = cli.nome || '';
     document.getElementById('cpfCliente').value = cli.cpf || '';
@@ -144,15 +161,14 @@ function editarCliente(id) {
     wizardClienteVoltarEtapa(1);
 }
 
-async function excluirCliente(id) {
+function excluirCliente(id) {
     if (!confirm('Excluir este cliente?')) return;
-    const { error } = await supabase.from('clientes').delete().eq('id', id);
-    if (!error) {
-        mostrarToast("Cliente excluído!", "success");
-        carregarClientes();
-    } else {
-        mostrarToast("Erro ao excluir cliente!", "error");
-    }
+    supabase.from('clientes').delete().eq('id', id).then(({ error }) => {
+        if (!error) {
+            mostrarToast("Cliente excluído!", "success");
+            carregarClientes();
+        } else {
+            mostrarToast("Erro ao excluir cliente!", "error");
+        }
+    });
 }
-
-// Não deixe window.onload duplicado em mais de um JS. Use apenas um ou mova para dashboard.js, por exemplo.

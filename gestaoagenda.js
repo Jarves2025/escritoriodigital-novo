@@ -4,18 +4,19 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 window._supabase = window._supabase || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const supabase = window._supabase;
 
-// Variável global só aqui!
 let agendaGestor = [];
 
 // Carrega dias da agenda do gestor
-async function carregarAgendaGestor() {
-    const { data, error } = await supabase
+function carregarAgendaGestor() {
+    supabase
         .from('agenda_gestor')
         .select('*')
         .order('data', { ascending: true })
-        .order('inicio', { ascending: true });
-    agendaGestor = data || [];
-    showGestaoAgenda();
+        .order('inicio', { ascending: true })
+        .then(({ data, error }) => {
+            agendaGestor = data || [];
+            showGestaoAgenda();
+        });
 }
 
 // Exibe tela de Gestão da Agenda
@@ -67,32 +68,40 @@ function showGestaoAgenda() {
 }
 
 // Adiciona novo dia na agenda (Supabase)
-async function salvarNovoDiaAtendimento(e) {
+function salvarNovoDiaAtendimento(e) {
     e.preventDefault();
     const data = document.getElementById('novoDiaData').value;
     const inicio = document.getElementById('novoDiaInicio').value;
     const fim = document.getElementById('novoDiaFim').value;
     if (!data || !inicio || !fim) return;
-    const { error } = await supabase
+    supabase
         .from('agenda_gestor')
-        .insert([{ data, inicio, fim }]);
-    if (!error) {
-        mostrarToast("Dia cadastrado!", "success");
-        carregarAgendaGestor();
-    } else {
-        mostrarToast("Erro ao cadastrar!", "error");
-    }
+        .insert([{ data, inicio, fim }])
+        .then(({ error }) => {
+            if (!error) {
+                mostrarToast("Dia cadastrado!", "success");
+                carregarAgendaGestor();
+            } else {
+                mostrarToast("Erro ao cadastrar!", "error");
+            }
+        });
 }
 
 // Excluir dia da agenda (Supabase)
-async function excluirDiaAtendimento(id) {
+function excluirDiaAtendimento(id) {
     if (confirm('Excluir este horário de atendimento?')) {
-        await supabase
+        supabase
             .from('agenda_gestor')
             .delete()
-            .eq('id', id);
-        mostrarToast("Dia excluído!", "success");
-        carregarAgendaGestor();
+            .eq('id', id)
+            .then(({ error }) => {
+                if (!error) {
+                    mostrarToast("Dia excluído!", "success");
+                    carregarAgendaGestor();
+                } else {
+                    mostrarToast("Erro ao excluir!", "error");
+                }
+            });
     }
 }
 
