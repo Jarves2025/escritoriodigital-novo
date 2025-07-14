@@ -1,4 +1,4 @@
-const supabase = window._supabase;
+var supabase = window._supabase;
 
 // Agendamentos sempre lidos do Supabase!
 let agendamentosSupabase = [];
