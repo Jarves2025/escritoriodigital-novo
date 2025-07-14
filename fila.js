@@ -1,4 +1,5 @@
-const supabase = window._supabase;
+var supabase = window._supabase;
+
 
 // Fila será um filtro sobre agendamentos do Supabase
 let fila = [];

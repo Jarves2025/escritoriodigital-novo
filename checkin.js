@@ -1,4 +1,5 @@
-const supabase = window._supabase;
+var supabase = window._supabase;
+
 
 // Lista de check-ins sempre lida do Supabase!
 let checkins = [];

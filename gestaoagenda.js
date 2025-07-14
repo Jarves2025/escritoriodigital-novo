@@ -1,4 +1,5 @@
-const supabase = window._supabase;
+var supabase = window._supabase;
+
 
 // Agenda do gestor — só guarda a lista da última leitura do banco
 let agendaGestor = [];

@@ -1,4 +1,5 @@
-const supabase = window._supabase;
+var supabase = window._supabase;
+
 
 // Lista local SOMENTE para exibir a tela, sempre vinda do banco!
 let clientes = [];
