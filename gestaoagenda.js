@@ -1,12 +1,9 @@
 // ------ GESTÃO DA AGENDA DO GESTOR (SUPABASE) ------
 
-// Configuração Supabase
-const SUPABASE_URL = 'https://jdflixpbupzwnictncbp.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpkZmxpeHBidXB6d25pY3RuY2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MDA4MjksImV4cCI6MjA2ODA3NjgyOX0.pNMVYVU5tw42_qMUhdJI1SE59xs5upVYz0RSyR81AMk';
+// Usa o Supabase já criado no window (feito em utils.js OU no HTML antes dos outros scripts)
+const supabase = window.supabase;
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Variável global
+// Variável global só aqui!
 let agendaGestor = [];
 
 // Carrega dias da agenda do gestor
@@ -24,7 +21,6 @@ async function carregarAgendaGestor() {
 function showGestaoAgenda() {
     currentPage = 'gestaoagenda';
     setActiveNav('nav-gestaoagenda');
-
     let html = `
         <h2>Gestão da Agenda</h2>
         <div style="margin:1.5rem 0;">
@@ -104,11 +100,4 @@ function formatarDataISO(dataISO) {
     if (!dataISO) return '';
     const [ano, mes, dia] = dataISO.split('-');
     return `${dia}/${mes}/${ano}`;
-}
-
-// Carrega agenda ao abrir tela
-if (typeof window !== "undefined") {
-    if (window.location.hash === "#gestaoagenda") {
-        carregarAgendaGestor();
-    }
 }
