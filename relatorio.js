@@ -1,4 +1,4 @@
-const supabase = window.supabase;
+var supabase = window.supabase;
 
 function showRelatorio() {
     currentPage = 'relatorio';
