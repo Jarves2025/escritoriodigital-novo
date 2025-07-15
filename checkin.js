@@ -1,155 +1,291 @@
-var supabase = window.supabase;
+// clientes.js
 
+// A variável 'supabase' é inicializada em supabaseConfig.js
 
-// Lista de check-ins sempre lida do Supabase!
-let checkins = [];
+// --- ESTADO DO MÓDULO ---
+let clientesCache = [];
+let wizardEtapaAtual = 1;
 
-// Carrega lista de check-ins do Supabase
-function carregarCheckins() {
-    supabase
-        .from('checkins')
-        .select('*')
-        .order('data_checkin', { ascending: false })
-        .order('horario_checkin', { ascending: false })
-        .then(({ data, error }) => {
-            checkins = data || [];
-            showCheckins();
-        });
-}
+// --- FUNÇÕES PRINCIPAIS DE RENDERIZAÇÃO ---
 
-// Mostra a tela/lista de check-ins
-function showCheckins() {
-    currentPage = 'checkin';
-    setActiveNav('nav-checkin');
-
-    let html = `
-        <h2>Check-ins</h2>
-        <button class="btn btn-primary" onclick="abrirNovoCheckin()">Novo Check-in</button>
-        <div id="tabelaCheckins" style="margin-top:2.2rem"></div>
+/**
+ * Ponto de entrada para a visualização de clientes.
+ * Busca os dados mais recentes e renderiza a tela principal.
+ */
+async function carregarClientes() {
+    setActiveNav('nav-clientes');
+    const contentArea = document.getElementById('content');
+    contentArea.innerHTML = `
+        <h2><span class="icon">👥</span>Clientes</h2>
+        <div class="actions-bar">
+            <button id="btnNovoCliente" class="btn btn-primary">
+                <span class="icon">➕</span>Novo Cliente
+            </button>
+        </div>
+        <div id="clientesContainer" class="table-container">
+            <p>Carregando clientes...</p>
+        </div>
     `;
-    document.getElementById('content').innerHTML = html;
-    listarCheckins();
+
+    document.getElementById('btnNovoCliente').addEventListener('click', abrirWizardCliente);
+
+    try {
+        const { data, error } = await supabase
+            .from('clientes')
+            .select('*')
+            .order('nome', { ascending: true });
+
+        if (error) throw error;
+
+        clientesCache = data || [];
+        renderTabelaClientes();
+    } catch (error) {
+        console.error('Erro ao carregar clientes:', error.message);
+        mostrarToast('Falha ao carregar clientes.', 'error');
+        document.getElementById('clientesContainer').innerHTML = '<p class="error-message">Não foi possível carregar os dados.</p>';
+    }
 }
 
-// Renderiza tabela de check-ins
-function listarCheckins() {
-    let html = `<table>
+/**
+ * Renderiza a tabela de clientes com os dados do cache.
+ */
+function renderTabelaClientes() {
+    const container = document.getElementById('clientesContainer');
+    if (!container) return;
+
+    if (clientesCache.length === 0) {
+        container.innerHTML = '<p class="empty-state">Nenhum cliente cadastrado.</p>';
+        return;
+    }
+
+    const table = document.createElement('table');
+    table.className = 'data-table';
+    table.innerHTML = `
         <thead>
             <tr>
-                <th>Data</th>
-                <th>Horário</th>
                 <th>Nome</th>
                 <th>CPF</th>
                 <th>Telefone</th>
-                <th>Status</th>
+                <th>Email</th>
                 <th>Ações</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody></tbody>
     `;
-    if (!checkins.length) {
-        html += `<tr><td colspan="7" style="color:#aaa; text-align:center;">Nenhum check-in registrado</td></tr>`;
-    } else {
-        checkins.forEach(ch => {
-            html += `
-                <tr>
-                    <td>${formatarDataISO(ch.data_checkin)}</td>
-                    <td>${ch.horario_checkin}</td>
-                    <td>${ch.nome}</td>
-                    <td>${ch.cpf}</td>
-                    <td>${ch.telefone || ""}</td>
-                    <td>${ch.status || ""}</td>
-                    <td>
-                        <button class="btn btn-danger" onclick="excluirCheckin(${ch.id})">Excluir</button>
-                    </td>
-                </tr>
-            `;
+
+    const tbody = table.querySelector('tbody');
+    clientesCache.forEach(cliente => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${cliente.nome || ''}</td>
+            <td>${cliente.cpf || ''}</td>
+            <td>${cliente.telefone || ''}</td>
+            <td>${cliente.email || ''}</td>
+            <td class="actions-cell"></td>
+        `;
+        
+        const editButton = document.createElement('button');
+        editButton.className = 'btn btn-secondary btn-sm';
+        editButton.innerHTML = '<span class="icon">✏️</span> Editar';
+        editButton.onclick = () => abrirWizardCliente(cliente.id);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'btn btn-danger btn-sm';
+        deleteButton.innerHTML = '<span class="icon">🗑️</span> Excluir';
+        deleteButton.onclick = () => handleDeleteCliente(cliente.id);
+        
+        const actionsCell = tr.querySelector('.actions-cell');
+        actionsCell.appendChild(editButton);
+        actionsCell.appendChild(deleteButton);
+        tbody.appendChild(tr);
+    });
+
+    container.innerHTML = '';
+    container.appendChild(table);
+}
+
+// --- LÓGICA DO WIZARD (MODAL) ---
+
+/**
+ * Abre o modal wizard para criar ou editar um cliente.
+ * @param {number|null} [clienteId=null] O ID do cliente para editar.
+ */
+function abrirWizardCliente(clienteId = null) {
+    const modal = document.getElementById('clienteModal');
+    const form = document.getElementById('clienteWizardForm');
+    const titulo = document.getElementById('wizardClienteTitulo');
+    const isEditing = clienteId !== null;
+
+    form.reset();
+    modal.removeAttribute('data-edit-id');
+
+    if (isEditing) {
+        const cliente = clientesCache.find(c => c.id === clienteId);
+        if (!cliente) {
+            mostrarToast("Cliente não encontrado.", "error");
+            return;
+        }
+        titulo.textContent = 'Editar Cliente';
+        // Preenche o formulário com os dados do cliente
+        Object.keys(cliente).forEach(key => {
+            const input = form.querySelector(`#${key}Cliente`);
+            if (input) input.value = cliente[key] || '';
         });
+        modal.setAttribute('data-edit-id', clienteId);
+    } else {
+        titulo.textContent = 'Novo Cliente';
     }
-    html += `</tbody></table>`;
-    document.getElementById('tabelaCheckins').innerHTML = html;
+
+    modal.style.display = 'block';
+    wizardNavegarParaEtapa(1);
 }
 
-// Abre modal para novo check-in
-function abrirNovoCheckin() {
-    let html = `
-        <div class="checkin-bg">
-        <div class="checkin-card">
-            <h2>Novo Check-in</h2>
-            <form id="formNovoCheckin" onsubmit="salvarNovoCheckin(event)">
-                <label>Nome: <input type="text" id="nomeCheckin" required></label><br>
-                <label>CPF: <input type="text" id="cpfCheckin" required oninput="mascaraCpf(this)"></label><br>
-                <label>Telefone: <input type="text" id="telCheckin" oninput="mascaraTelefone(this)"></label><br>
-                <label>Data: <input type="date" id="dataCheckin" required></label><br>
-                <label>Horário: <input type="time" id="horarioCheckin" required></label><br>
-                <label>Status: 
-                    <select id="statusCheckin">
-                        <option value="PRESENTE">PRESENTE</option>
-                        <option value="AGUARDANDO">AGUARDANDO</option>
-                        <option value="ATENDIDO">ATENDIDO</option>
-                    </select>
-                </label><br>
-                <button type="submit" class="btn btn-success">Registrar</button>
-                <button type="button" class="btn btn-secondary" onclick="showCheckins()">Cancelar</button>
-            </form>
-        </div>
-        </div>
+/**
+ * Fecha o modal do cliente e reseta seu estado.
+ */
+function fecharClienteModal() {
+    const modal = document.getElementById('clienteModal');
+    modal.style.display = 'none';
+    modal.removeAttribute('data-edit-id');
+}
+
+/**
+ * Navega para uma etapa específica do wizard.
+ * @param {number} numeroEtapa O número da etapa para exibir.
+ */
+function wizardNavegarParaEtapa(numeroEtapa) {
+    wizardEtapaAtual = numeroEtapa;
+    // Esconde todas as etapas
+    document.querySelectorAll('.wizard-body').forEach(etapa => etapa.style.display = 'none');
+    // Mostra a etapa atual
+    document.getElementById(`wizardClienteEtapa${numeroEtapa}`).style.display = 'block';
+
+    // Atualiza os indicadores de passo
+    document.querySelectorAll('.wizard-step').forEach((step, index) => {
+        step.classList.toggle('active', index + 1 === numeroEtapa);
+        step.classList.toggle('completed', index + 1 < numeroEtapa);
+    });
+
+    // Se for a última etapa, gera o resumo
+    if (numeroEtapa === 4) {
+        gerarResumoWizard();
+    }
+}
+
+function wizardClienteProximaEtapa(proximaEtapa) {
+    wizardNavegarParaEtapa(proximaEtapa);
+}
+
+function wizardClienteVoltarEtapa(etapaAnterior) {
+    wizardNavegarParaEtapa(etapaAnterior);
+}
+
+/**
+ * Gera o resumo dos dados inseridos na última etapa do wizard.
+ */
+function gerarResumoWizard() {
+    const resumoContainer = document.getElementById('wizardClienteResumo');
+    const nome = document.getElementById('nomeCliente').value;
+    const cpf = document.getElementById('cpfCliente').value;
+    const telefone = document.getElementById('telefoneCliente').value;
+    const email = document.getElementById('emailCliente').value;
+
+    resumoContainer.innerHTML = `
+        <p><strong>Nome:</strong> ${nome}</p>
+        <p><strong>CPF:</strong> ${cpf}</p>
+        <p><strong>Telefone:</strong> ${telefone}</p>
+        <p><strong>Email:</strong> ${email || 'Não informado'}</p>
+        <p><i>Confira os dados antes de salvar.</i></p>
     `;
-    document.getElementById('content').innerHTML = html;
 }
 
-// Salva novo check-in no Supabase
-function salvarNovoCheckin(event) {
-    event.preventDefault();
-    const novoCheckin = {
-        nome: document.getElementById('nomeCheckin').value.trim(),
-        cpf: document.getElementById('cpfCheckin').value.trim(),
-        telefone: document.getElementById('telCheckin').value.trim(),
-        data_checkin: document.getElementById('dataCheckin').value,
-        horario_checkin: document.getElementById('horarioCheckin').value,
-        status: document.getElementById('statusCheckin').value
+// --- LÓGICA DE DADOS (CRUD) ---
+
+/**
+ * Salva (cria ou atualiza) um cliente a partir dos dados do wizard.
+ */
+async function salvarClienteWizard() {
+    const modal = document.getElementById('clienteModal');
+    const clienteId = modal.getAttribute('data-edit-id');
+    const isEditing = !!clienteId;
+
+    const dadosCliente = {
+        nome: document.getElementById('nomeCliente').value.trim(),
+        cpf: document.getElementById('cpfCliente').value.trim(),
+        data_nascimento: document.getElementById('dataNascCliente').value || null,
+        telefone: document.getElementById('telefoneCliente').value.trim(),
+        cep: document.getElementById('cepCliente').value.trim(),
+        logradouro: document.getElementById('logradouroCliente').value.trim(),
+        numero: document.getElementById('numeroCliente').value.trim(),
+        complemento: document.getElementById('complementoCliente').value.trim(),
+        bairro: document.getElementById('bairroCliente').value.trim(),
+        cidade: document.getElementById('cidadeCliente').value.trim(),
+        uf: document.getElementById('ufCliente').value.trim(),
+        email: document.getElementById('emailCliente').value.trim(),
+        senha_gov: document.getElementById('senhaGovCliente').value.trim(),
+        observacoes: document.getElementById('observacoesCliente').value.trim()
     };
-    supabase.from('checkins').insert([novoCheckin]).then(({ error }) => {
-        if (!error) {
-            mostrarToast("Check-in registrado!", "success");
-            carregarCheckins();
+
+    if (!dadosCliente.nome || !dadosCliente.cpf || !dadosCliente.telefone) {
+        mostrarToast("Nome, CPF e Telefone são obrigatórios!", "error");
+        wizardNavegarParaEtapa(1); // Leva o usuário de volta para a primeira etapa
+        return;
+    }
+
+    try {
+        let error;
+        if (isEditing) {
+            const { error: updateError } = await supabase.from('clientes').update(dadosCliente).eq('id', clienteId);
+            error = updateError;
         } else {
-            mostrarToast("Erro ao registrar check-in!", "error");
+            const { error: insertError } = await supabase.from('clientes').insert([dadosCliente]);
+            error = insertError;
         }
-    });
-}
 
-// Excluir check-in do Supabase
-function excluirCheckin(id) {
-    if (!confirm('Excluir este check-in?')) return;
-    supabase.from('checkins').delete().eq('id', id).then(({ error }) => {
-        if (!error) {
-            mostrarToast("Check-in excluído!", "success");
-            carregarCheckins();
-        } else {
-            mostrarToast("Erro ao excluir check-in!", "error");
+        if (error) {
+            // Trata erro de CPF duplicado
+            if (error.code === '23505') {
+                throw new Error("Já existe um cliente com este CPF.");
+            }
+            throw error;
         }
-    });
+
+        mostrarToast(`Cliente ${isEditing ? 'atualizado' : 'salvo'} com sucesso!`, "success");
+        fecharClienteModal();
+        carregarClientes(); // Recarrega a lista da página principal
+    } catch (error) {
+        console.error('Erro ao salvar cliente:', error.message);
+        mostrarToast(`Falha ao salvar: ${error.message}`, "error");
+    }
 }
 
-// Funções de máscara já estão em outros arquivos, use do utils.js se já existir.
-function mascaraCpf(input) {
-    let value = input.value.replace(/\D/g, '');
-    value = value.replace(/(\d{3})(\d)/, "$1.$2");
-    value = value.replace(/(\d{3})(\d)/, "$1.$2");
-    value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    input.value = value;
-}
-function mascaraTelefone(input) {
-    let value = input.value.replace(/\D/g, '');
-    value = value.replace(/^(\d{2})(\d)/g, "($1) $2");
-    value = value.replace(/(\d{5})(\d)/, "$1-$2");
-    input.value = value;
+/**
+ * Exclui um cliente do banco de dados.
+ * @param {number} clienteId O ID do cliente a ser excluído.
+ */
+async function handleDeleteCliente(clienteId) {
+    if (!confirm("Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.")) {
+        return;
+    }
+
+    try {
+        const { error } = await supabase.from('clientes').delete().eq('id', clienteId);
+        if (error) throw error;
+
+        mostrarToast("Cliente excluído com sucesso!", "success");
+        // Atualização instantânea da UI
+        clientesCache = clientesCache.filter(c => c.id !== clienteId);
+        renderTabelaClientes();
+    } catch (error) {
+        console.error('Erro ao excluir cliente:', error.message);
+        mostrarToast("Falha ao excluir o cliente.", "error");
+    }
 }
 
-// Função auxiliar para data no padrão dd/mm/aaaa
-function formatarDataISO(dataISO) {
-    if (!dataISO) return '';
-    const [ano, mes, dia] = dataISO.split('-');
-    return `${dia}/${mes}/${ano}`;
-}
+// Listener global para fechar o modal ao clicar fora dele
+window.addEventListener('click', (event) => {
+    const modal = document.getElementById('clienteModal');
+    if (event.target === modal) {
+        fecharClienteModal();
+    }
+});

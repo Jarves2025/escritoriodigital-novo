@@ -1,66 +1,79 @@
-var supabase = window.supabase;
+// dashboard.js
 
+// A variável 'supabase' é inicializada em supabaseConfig.js
 
-// Exibe o painel inicial (dashboard) com resumos dos dados
+/**
+ * Ponto de entrada para a visualização do Dashboard.
+ * Inicia o carregamento dos dados e exibe o estado inicial.
+ */
 function showDashboard() {
-    currentPage = 'dashboard';
     setActiveNav('nav-dashboard');
-    document.getElementById('content').innerHTML = `<h2>Carregando dados...</h2>`;
+    const contentArea = document.getElementById('content');
+    
+    // Define a estrutura inicial do dashboard com um estado de carregamento
+    contentArea.innerHTML = `
+        <h2><span class="icon">📊</span>Dashboard</h2>
+        <div id="dashboard-cards-container" class="dashboard-cards">
+            <div class="dashboard-card placeholder"></div>
+            <div class="dashboard-card placeholder"></div>
+            <div class="dashboard-card placeholder"></div>
+            <div class="dashboard-card placeholder"></div>
+        </div>
+    `;
+    
+    // Inicia o processo de busca e renderização dos dados
     carregarResumoDashboard();
 }
 
-// Função para buscar os resumos e atualizar a tela
+/**
+ * Busca os totais de cada tabela de forma eficiente usando count()
+ * e renderiza os cards do dashboard com os dados.
+ */
 async function carregarResumoDashboard() {
-    // Pega totais direto do Supabase (pode usar count, mas aqui busca tudo para facilitar)
-    let [clientesRes, agendamentosRes, checkinsRes] = await Promise.all([
-        supabase.from('clientes').select('*'),
-        supabase.from('agendamentos').select('*'),
-        supabase.from('checkins').select('*')
-    ]);
+    const container = document.getElementById('dashboard-cards-container');
 
-    let clientes = clientesRes.data || [];
-    let agendamentos = agendamentosRes.data || [];
-    let checkins = checkinsRes.data || [];
+    try {
+        // Executa todas as contagens em paralelo para máxima eficiência
+        const [
+            { count: totalClientes, error: errClientes },
+            { count: totalAgendamentos, error: errAgendamentos },
+            { count: totalCheckins, error: errCheckins },
+            { count: totalAtendidos, error: errAtendidos }
+        ] = await Promise.all([
+            supabase.from('clientes').select('*', { count: 'exact', head: true }),
+            supabase.from('agendamentos').select('*', { count: 'exact', head: true }),
+            supabase.from('checkins').select('*', { count: 'exact', head: true }),
+            supabase.from('agendamentos').select('*', { count: 'exact', head: true }).eq('status', 'ATENDIDO')
+        ]);
 
-    // Filtros (exemplos)
-    let agendados = agendamentos.filter(a => a.status === "AGENDADO");
-    let atendidos = agendamentos.filter(a => a.status === "ATENDIDO");
-    let pendentes = agendamentos.filter(a => a.status !== "ATENDIDO");
+        // Verifica se houve erro em alguma das chamadas
+        if (errClientes || errAgendamentos || errCheckins || errAtendidos) {
+            throw new Error('Falha ao buscar um ou mais totais do banco de dados.');
+        }
 
-    let html = `
-        <h2>Dashboard</h2>
-        <div class="dashboard-cards">
+        // Renderiza os cards com os dados obtidos
+        container.innerHTML = `
             <div class="dashboard-card">
                 <h3>Total de Clientes</h3>
-                <p class="dashboard-num">${clientes.length}</p>
+                <p class="dashboard-num">${totalClientes !== null ? totalClientes : '?'}</p>
             </div>
             <div class="dashboard-card">
                 <h3>Total de Agendamentos</h3>
-                <p class="dashboard-num">${agendamentos.length}</p>
+                <p class="dashboard-num">${totalAgendamentos !== null ? totalAgendamentos : '?'}</p>
             </div>
             <div class="dashboard-card">
-                <h3>Agendados</h3>
-                <p class="dashboard-num">${agendados.length}</p>
+                <h3>Agendamentos Atendidos</h3>
+                <p class="dashboard-num">${totalAtendidos !== null ? totalAtendidos : '?'}</p>
             </div>
             <div class="dashboard-card">
-                <h3>Atendidos</h3>
-                <p class="dashboard-num">${atendidos.length}</p>
+                <h3>Total de Check-ins</h3>
+                <p class="dashboard-num">${totalCheckins !== null ? totalCheckins : '?'}</p>
             </div>
-            <div class="dashboard-card">
-                <h3>Check-ins</h3>
-                <p class="dashboard-num">${checkins.length}</p>
-            </div>
-        </div>
-    `;
-    document.getElementById('content').innerHTML = html;
-}
+        `;
 
-// (Opcional) Estilo para cards do dashboard — pode ajustar conforme seu CSS global
-const dashStyle = document.createElement('style');
-dashStyle.innerHTML = `
-.dashboard-cards { display: flex; gap: 2.2rem; flex-wrap: wrap; margin-top: 2.5rem; }
-.dashboard-card { background: #fff; border-radius: 17px; box-shadow: 0 2px 15px #22326214; padding: 1.8rem 2.1rem 1.4rem 2.1rem; min-width: 190px; text-align: center; }
-.dashboard-num { font-size: 2.3rem; font-weight: 800; margin-top: 0.6rem; color: #185da1;}
-@media (max-width: 700px){ .dashboard-cards { flex-direction: column; gap: 1.3rem;} .dashboard-card{min-width:120px;padding:1.1rem 0.8rem;} }
-`;
-document.head.appendChild(dashStyle);
+    } catch (error) {
+        console.error('Erro ao carregar resumos do dashboard:', error.message);
+        mostrarToast('Não foi possível carregar os dados do dashboard.', 'error');
+        container.innerHTML = '<p class="error-message">Erro ao carregar os dados. Tente atualizar a página.</p>';
+    }
+}

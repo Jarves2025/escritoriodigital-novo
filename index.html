@@ -8,21 +8,26 @@
 </head>
 <body>
     <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Container de Login -->
     <div id="loginContainer" class="login-container">
-        <form class="login-form" onsubmit="return login(event)">
+        <!-- Formulário de login com ID e sem onsubmit -->
+        <form class="login-form" id="loginForm">
             <h2>Sistema de Agendamentos</h2>
             <div class="form-group">
                 <label for="email">Email:</label>
-                <input type="email" id="email" required>
+                <input type="email" id="email" required autocomplete="email">
             </div>
             <div class="form-group">
                 <label for="senha">Senha:</label>
-                <input type="password" id="senha" required>
+                <input type="password" id="senha" required autocomplete="current-password">
             </div>
             <button type="submit" class="btn btn-primary" id="loginBtn">Entrar</button>
         </form>
     </div>
-    <div id="mainContainer" class="main-container">
+
+    <!-- Container Principal da Aplicação (inicialmente oculto) -->
+    <div id="mainContainer" class="main-container" style="display:none;">
         <nav class="sidebar">
             <h3>Menu Principal</h3>
             <a href="#" onclick="showDashboard()" id="nav-dashboard">📊 Dashboard</a>
@@ -32,202 +37,203 @@
             <a href="#" onclick="showFila()" id="nav-fila">🎯 Fila de Atendimento</a>
             <a href="#" onclick="showRelatorio()" id="nav-relatorio">📄 Relatório</a>
             <a href="#" onclick="showPainel()" id="nav-painel">📺 Painel de Chamada</a>
-            <a href="#" id="nav-gestaoagenda" style="display:none;" onclick="carregarAgendaGestor()">
-    📅 Gestão da Agenda
-</a>
-            <a href="#" onclick="logout()" id="nav-logout">🚪 Sair</a>
+            <a href="#" id="nav-gestaoagenda" style="display:none;" onclick="carregarAgendaGestor()">📅 Gestão da Agenda</a>
+            <!-- Link de logout sem onclick -->
+            <a href="#" id="nav-logout">🚪 Sair</a>
         </nav>
         <main class="content" id="content"></main>
     </div>
+
     <!-- MODAL WIZARD - CADASTRO DE CLIENTE -->
-<div id="clienteModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3><span id="wizardClienteTitulo">Novo Cliente</span></h3>
-      <span class="close" onclick="fecharClienteModal()">&times;</span>
+    <div id="clienteModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3><span id="wizardClienteTitulo">Novo Cliente</span></h3>
+          <span class="close" onclick="fecharClienteModal()">&times;</span>
+        </div>
+        <div class="wizard-steps">
+          <div class="wizard-step" id="stepCliente1"><div class="circle">1</div>Dados Pessoais</div>
+          <div class="wizard-step" id="stepCliente2"><div class="circle">2</div>Endereço</div>
+          <div class="wizard-step" id="stepCliente3"><div class="circle">3</div>Acesso</div>
+          <div class="wizard-step" id="stepCliente4"><div class="circle">4</div>Finalizar</div>
+        </div>
+        <form id="clienteWizardForm" autocomplete="off" style="margin:0">
+          <div id="wizardClienteEtapa1" class="wizard-body">
+            <div class="wizard-section-title">Dados Pessoais</div>
+            <div class="wizard-row">
+              <div class="form-group">
+                <label for="nomeCliente">Nome Completo *</label>
+                <input type="text" id="nomeCliente" required oninput="toUpperNome(this)">
+              </div>
+              <div class="form-group">
+                <label for="cpfCliente">CPF *</label>
+                <input type="text" id="cpfCliente" maxlength="14" required oninput="mascaraCPF(this)">
+              </div>
+            </div>
+            <div class="wizard-row">
+              <div class="form-group">
+                <label for="dataNascCliente">Data de Nascimento</label>
+                <input type="date" id="dataNascCliente">
+              </div>
+              <div class="form-group">
+                <label for="telefoneCliente">Telefone *</label>
+                <input type="text" id="telefoneCliente" maxlength="15" required oninput="mascaraTelefone(this)">
+              </div>
+            </div>
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-primary" onclick="wizardClienteProximaEtapa(2)">Próximo</button>
+            </div>
+          </div>
+          <div id="wizardClienteEtapa2" class="wizard-body" style="display:none">
+            <div class="wizard-section-title">Endereço</div>
+            <div class="wizard-row">
+              <div class="form-group">
+                <label for="cepCliente">CEP</label>
+                <input type="text" id="cepCliente" maxlength="9" oninput="mascaraCEP(this)">
+              </div>
+              <div class="form-group">
+                <label for="logradouroCliente">Logradouro</label>
+                <input type="text" id="logradouroCliente">
+              </div>
+              <div class="form-group">
+                <label for="numeroCliente">Número</label>
+                <input type="text" id="numeroCliente">
+              </div>
+            </div>
+            <div class="wizard-row">
+              <div class="form-group">
+                <label for="complementoCliente">Complemento</label>
+                <input type="text" id="complementoCliente">
+              </div>
+              <div class="form-group">
+                <label for="bairroCliente">Bairro</label>
+                <input type="text" id="bairroCliente">
+              </div>
+              <div class="form-group">
+                <label for="cidadeCliente">Cidade</label>
+                <input type="text" id="cidadeCliente">
+              </div>
+              <div class="form-group">
+                <label for="ufCliente">UF</label>
+                <select id="ufCliente"></select>
+              </div>
+            </div>
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-secondary" onclick="wizardClienteVoltarEtapa(1)">Voltar</button>
+              <button type="button" class="btn btn-primary" onclick="wizardClienteProximaEtapa(3)">Próximo</button>
+            </div>
+          </div>
+          <div id="wizardClienteEtapa3" class="wizard-body" style="display:none">
+            <div class="wizard-section-title">Dados de Acesso</div>
+            <div class="wizard-row">
+              <div class="form-group">
+                <label for="emailCliente">E-mail</label>
+                <input type="email" id="emailCliente">
+              </div>
+              <div class="form-group">
+                <label for="senhaGovCliente">Senha Gov</label>
+                <input type="text" id="senhaGovCliente">
+              </div>
+            </div>
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-secondary" onclick="wizardClienteVoltarEtapa(2)">Voltar</button>
+              <button type="button" class="btn btn-primary" onclick="wizardClienteProximaEtapa(4)">Próximo</button>
+            </div>
+          </div>
+          <div id="wizardClienteEtapa4" class="wizard-body" style="display:none">
+            <div class="wizard-section-title">Resumo e Observações</div>
+            <div class="wizard-summary" id="wizardClienteResumo"></div>
+            <div class="form-group">
+              <label for="observacoesCliente">Observações</label>
+              <textarea id="observacoesCliente"></textarea>
+            </div>
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-secondary" onclick="wizardClienteVoltarEtapa(3)">Voltar</button>
+              <button type="button" class="btn btn-success" onclick="salvarClienteWizard()">Salvar Cliente</button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
-    <div class="wizard-steps">
-      <div class="wizard-step" id="stepCliente1"><div class="circle">1</div>Dados Pessoais</div>
-      <div class="wizard-step" id="stepCliente2"><div class="circle">2</div>Endereço</div>
-      <div class="wizard-step" id="stepCliente3"><div class="circle">3</div>Acesso</div>
-      <div class="wizard-step" id="stepCliente4"><div class="circle">4</div>Finalizar</div>
-    </div>
-    <form id="clienteWizardForm" autocomplete="off" style="margin:0">
-      <div id="wizardClienteEtapa1" class="wizard-body">
-        <div class="wizard-section-title">Dados Pessoais</div>
-        <div class="wizard-row">
-          <div class="form-group">
-            <label for="nomeCliente">Nome Completo *</label>
-            <input type="text" id="nomeCliente" required oninput="toUpperNome(this)">
-          </div>
-          <div class="form-group">
-            <label for="cpfCliente">CPF *</label>
-            <input type="text" id="cpfCliente" maxlength="14" required oninput="mascaraCPF(this)">
-          </div>
-        </div>
-        <div class="wizard-row">
-          <div class="form-group">
-            <label for="dataNascCliente">Data de Nascimento</label>
-            <input type="date" id="dataNascCliente">
-          </div>
-          <div class="form-group">
-            <label for="telefoneCliente">Telefone *</label>
-            <input type="text" id="telefoneCliente" maxlength="15" required oninput="mascaraTelefone(this)">
-          </div>
-        </div>
-        <div class="wizard-actions">
-          <button type="button" class="btn btn-primary" onclick="wizardClienteProximaEtapa(2)">Próximo</button>
-        </div>
-      </div>
-      <div id="wizardClienteEtapa2" class="wizard-body" style="display:none">
-        <div class="wizard-section-title">Endereço</div>
-        <div class="wizard-row">
-          <div class="form-group">
-            <label for="cepCliente">CEP</label>
-            <input type="text" id="cepCliente" maxlength="9" oninput="mascaraCEP(this)">
-          </div>
-          <div class="form-group">
-            <label for="logradouroCliente">Logradouro</label>
-            <input type="text" id="logradouroCliente">
-          </div>
-          <div class="form-group">
-            <label for="numeroCliente">Número</label>
-            <input type="text" id="numeroCliente">
-          </div>
-        </div>
-        <div class="wizard-row">
-          <div class="form-group">
-            <label for="complementoCliente">Complemento</label>
-            <input type="text" id="complementoCliente">
-          </div>
-          <div class="form-group">
-            <label for="bairroCliente">Bairro</label>
-            <input type="text" id="bairroCliente">
-          </div>
-          <div class="form-group">
-            <label for="cidadeCliente">Cidade</label>
-            <input type="text" id="cidadeCliente">
-          </div>
-          <div class="form-group">
-            <label for="ufCliente">UF</label>
-            <select id="ufCliente"></select>
-          </div>
-        </div>
-        <div class="wizard-actions">
-          <button type="button" class="btn btn-secondary" onclick="wizardClienteVoltarEtapa(1)">Voltar</button>
-          <button type="button" class="btn btn-primary" onclick="wizardClienteProximaEtapa(3)">Próximo</button>
-        </div>
-      </div>
-      <div id="wizardClienteEtapa3" class="wizard-body" style="display:none">
-        <div class="wizard-section-title">Dados de Acesso</div>
-        <div class="wizard-row">
-          <div class="form-group">
-            <label for="emailCliente">E-mail</label>
-            <input type="email" id="emailCliente">
-          </div>
-          <div class="form-group">
-            <label for="senhaGovCliente">Senha Gov</label>
-            <input type="text" id="senhaGovCliente">
-          </div>
-        </div>
-        <div class="wizard-actions">
-          <button type="button" class="btn btn-secondary" onclick="wizardClienteVoltarEtapa(2)">Voltar</button>
-          <button type="button" class="btn btn-primary" onclick="wizardClienteProximaEtapa(4)">Próximo</button>
-        </div>
-      </div>
-      <div id="wizardClienteEtapa4" class="wizard-body" style="display:none">
-        <div class="wizard-section-title">Resumo e Observações</div>
-        <div class="wizard-summary" id="wizardClienteResumo"></div>
-        <div class="form-group">
-          <label for="observacoesCliente">Observações</label>
-          <textarea id="observacoesCliente"></textarea>
-        </div>
-        <div class="wizard-actions">
-          <button type="button" class="btn btn-secondary" onclick="wizardClienteVoltarEtapa(3)">Voltar</button>
-          <button type="button" class="btn btn-success" onclick="salvarClienteWizard()">Salvar Cliente</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
 
+    <!-- MODAL WIZARD - NOVO AGENDAMENTO -->
+    <div id="agendamentoModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Novo Agendamento</h3>
+          <span class="close" onclick="fecharAgendamentoModal()">&times;</span>
+        </div>
+        <div class="wizard-steps">
+          <div class="wizard-step" id="stepAgendamento1"><div class="circle">1</div>CPF</div>
+          <div class="wizard-step" id="stepAgendamento2"><div class="circle">2</div>Cliente</div>
+          <div class="wizard-step" id="stepAgendamento3"><div class="circle">3</div>Data/Horário</div>
+          <div class="wizard-step" id="stepAgendamento4"><div class="circle">4</div>Confirmar</div>
+        </div>
+        <form id="agendamentoWizardForm" autocomplete="off" style="margin:0">
+          <div id="wizardAgendamentoEtapa1" class="wizard-body">
+            <div class="wizard-section-title">Informe o CPF do cliente</div>
+            <div class="wizard-row">
+              <div class="form-group">
+                <label for="cpfAgendamento">CPF *</label>
+                <input type="text" id="cpfAgendamento" maxlength="14" required oninput="mascaraCPF(this); checarCPFParaAgendamento(this.value);">
+              </div>
+            </div>
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-primary" id="wizardAgendamentoProximo1" onclick="wizardAgendamentoProximaEtapa(2)" disabled>Próximo</button>
+            </div>
+          </div>
+          <div id="wizardAgendamentoEtapa2" class="wizard-body" style="display:none">
+            <div class="wizard-section-title">Dados do Cliente</div>
+            <div class="wizard-row">
+              <div class="form-group">
+                <label for="nomeAgendamento">Nome Completo *</label>
+                <input type="text" id="nomeAgendamento" required>
+              </div>
+              <div class="form-group">
+                <label for="telefoneAgendamento">Telefone *</label>
+                <input type="text" id="telefoneAgendamento" maxlength="15" required>
+              </div>
+            </div>
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-secondary" onclick="wizardAgendamentoVoltarEtapa(1)">Voltar</button>
+              <button type="button" class="btn btn-primary" onclick="wizardAgendamentoProximaEtapa(3)">Próximo</button>
+            </div>
+          </div>
+          <div id="wizardAgendamentoEtapa3" class="wizard-body" style="display:none">
+            <div class="wizard-section-title">Escolha Data e Horário</div>
+            <div class="wizard-row">
+              <div class="form-group">
+                <label for="dataAgendamento">Data *</label>
+                <input type="date" id="dataAgendamento" required onchange="carregarHorariosDisponiveis()">
+              </div>
+              <div class="form-group">
+                <label for="horarioSelect">Horário *</label>
+                <select id="horarioSelect" required>
+                  <option value="">Selecione um horário</option>
+                </select>
+              </div>
+            </div>
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-secondary" onclick="wizardAgendamentoVoltarEtapa(2)">Voltar</button>
+              <button type="button" class="btn btn-primary" onclick="wizardAgendamentoProximaEtapa(4)">Próximo</button>
+            </div>
+          </div>
+          <div id="wizardAgendamentoEtapa4" class="wizard-body" style="display:none">
+            <div class="wizard-section-title">Resumo</div>
+            <div class="wizard-summary" id="wizardAgendamentoResumo"></div>
+            <div class="wizard-actions">
+              <button type="button" class="btn btn-secondary" onclick="wizardAgendamentoVoltarEtapa(3)">Voltar</button>
+              <button type="button" class="btn btn-success" onclick="salvarAgendamentoWizard()">Agendar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
 
-<!-- MODAL WIZARD - NOVO AGENDAMENTO -->
-<div id="agendamentoModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Novo Agendamento</h3>
-      <span class="close" onclick="fecharAgendamentoModal()">&times;</span>
-    </div>
-    <div class="wizard-steps">
-      <div class="wizard-step" id="stepAgendamento1"><div class="circle">1</div>CPF</div>
-      <div class="wizard-step" id="stepAgendamento2"><div class="circle">2</div>Cliente</div>
-      <div class="wizard-step" id="stepAgendamento3"><div class="circle">3</div>Data/Horário</div>
-      <div class="wizard-step" id="stepAgendamento4"><div class="circle">4</div>Confirmar</div>
-    </div>
-    <form id="agendamentoWizardForm" autocomplete="off" style="margin:0">
-      <div id="wizardAgendamentoEtapa1" class="wizard-body">
-        <div class="wizard-section-title">Informe o CPF do cliente</div>
-        <div class="wizard-row">
-          <div class="form-group">
-            <label for="cpfAgendamento">CPF *</label>
-            <input type="text" id="cpfAgendamento" maxlength="14" required oninput="mascaraCPF(this); checarCPFParaAgendamento(this.value);">
-          </div>
-        </div>
-        <div class="wizard-actions">
-          <button type="button" class="btn btn-primary" id="wizardAgendamentoProximo1" onclick="wizardAgendamentoProximaEtapa(2)" disabled>Próximo</button>
-        </div>
-      </div>
-      <div id="wizardAgendamentoEtapa2" class="wizard-body" style="display:none">
-        <div class="wizard-section-title">Dados do Cliente</div>
-        <div class="wizard-row">
-          <div class="form-group">
-            <label for="nomeAgendamento">Nome Completo *</label>
-            <input type="text" id="nomeAgendamento" required>
-          </div>
-          <div class="form-group">
-            <label for="telefoneAgendamento">Telefone *</label>
-            <input type="text" id="telefoneAgendamento" maxlength="15" required>
-          </div>
-        </div>
-        <div class="wizard-actions">
-          <button type="button" class="btn btn-secondary" onclick="wizardAgendamentoVoltarEtapa(1)">Voltar</button>
-          <button type="button" class="btn btn-primary" onclick="wizardAgendamentoProximaEtapa(3)">Próximo</button>
-        </div>
-      </div>
-      <div id="wizardAgendamentoEtapa3" class="wizard-body" style="display:none">
-        <div class="wizard-section-title">Escolha Data e Horário</div>
-        <div class="wizard-row">
-          <div class="form-group">
-            <label for="dataAgendamento">Data *</label>
-            <input type="date" id="dataAgendamento" required onchange="carregarHorariosDisponiveis()">
-          </div>
-          <div class="form-group">
-            <label for="horarioSelect">Horário *</label>
-            <select id="horarioSelect" required>
-              <option value="">Selecione um horário</option>
-            </select>
-          </div>
-        </div>
-        <div class="wizard-actions">
-          <button type="button" class="btn btn-secondary" onclick="wizardAgendamentoVoltarEtapa(2)">Voltar</button>
-          <button type="button" class="btn btn-primary" onclick="wizardAgendamentoProximaEtapa(4)">Próximo</button>
-        </div>
-      </div>
-      <div id="wizardAgendamentoEtapa4" class="wizard-body" style="display:none">
-        <div class="wizard-section-title">Resumo</div>
-        <div class="wizard-summary" id="wizardAgendamentoResumo"></div>
-        <div class="wizard-actions">
-          <button type="button" class="btn btn-secondary" onclick="wizardAgendamentoVoltarEtapa(3)">Voltar</button>
-          <button type="button" class="btn btn-success" onclick="salvarAgendamentoWizard()">Agendar</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-    <!-- scripts -->
+    <!-- Scripts com 'defer' para melhor performance -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="supabaseConfig.js" defer></script>
+    <script src="login.js" defer></script> <!-- Movido para cima para carregar a lógica de auth antes -->
     <script src="utils.js" defer></script>
     <script src="clientes.js" defer></script>
     <script src="agendamentos.js" defer></script>
@@ -236,6 +242,5 @@
     <script src="checkin.js" defer></script>
     <script src="fila.js" defer></script>
     <script src="relatorio.js" defer></script>
-    <script src="login.js" defer></script>
 </body>
 </html>
